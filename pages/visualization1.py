@@ -17,7 +17,7 @@ europe = ['NOR', 'SWE', 'FIN', 'DNK', 'ISL', 'GBR', 'IRL', 'DEU', 'NLD', 'POL',
 continent_data = data[data['country'].isin(continents)][['year', 'country', 'co2']]
 continent_aggregated = (
     continent_data.groupby(['year', 'country'])
-    .sum()
+    .sum(numeric_only=True)
     .reset_index()
     .rename(columns={'country': 'region'})
 )
@@ -42,7 +42,7 @@ fig_continents = px.line(
 europe_data = data[data['iso_code'].isin(europe)][['year', 'iso_code', 'country', 'co2']]
 europe_aggregated = (
     europe_data.groupby(['year', 'country'])
-    .sum()
+    .sum(numeric_only=True)
     .reset_index()
 )
 
