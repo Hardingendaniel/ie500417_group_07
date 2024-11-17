@@ -1,0 +1,19 @@
+/* vis2.css, to add styling to visualization2.py */
+
+/* Clamp, horizontal content */
+.centered-content {
+    width: 75%; /* Clamp to 75% width */
+    margin: 0 auto; /* Center the div horizontally */
+    text-align: left;
+}
+
+/* Additional styles for the app */
+h1 {
+    text-align: center;
+}
+
+.tabs-content {
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
