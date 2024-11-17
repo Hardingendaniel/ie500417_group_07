@@ -4,6 +4,7 @@ import pandasql as sql
 import pandas as pd
 import plotly.express as px
 
+
 # Path to the markdown file
 MARKDOWN_FILE_PATH = 'data/winter_1995_96.md'
 
@@ -44,11 +45,13 @@ def query_selected_country_temperatures(global_temp_data):
     Extract temperature data from the selected countries.
     from the years 1995 to 1998, ignoring the 'Year' column which represents months, map those to the months later on.
     """
-    # Only grab the countries with the following ISO codes.
-    desired_codes = ['RUS', 'NOR', 'FIN', 'SWE', 'CAN', 'ISL', 'EST', 'GRL']
+    # Only look at the Northern countries which were affected by the temperature changes, more so than more southern countries.
+    desired_codes = ['NOR', 'SWE', 'FIN', 'DNK', 'ISL', 'GBR', 'IRL', 'DEU', 'NLD', 'POL', 
+        'EST', 'LVA', 'LTU', 'RUS', 'BLR', 'CZE', 'SVK', 'FRA', 'UKR', 
+        'CHE', 'AUT', 'HUN', 'BEL', 'LUX', 'MDA']
 
     # Define the years we are looking at.
-    selected_years = ['1995', '1996', '1997', '1998']
+    selected_years = ['1995', '1996', '1997']
 
     # Use backticks for year columns since they are numeric and may cause syntax issues
     columns_to_select = ['Entity', 'Code', 'Year'] + selected_years
@@ -114,11 +117,11 @@ layout = html.Div([
                         className='centered-content',
                         style={"margin-bottom": "20px"}  # Adds space below markdown
                     ),
-                    
+
                     # Aggregated countries, plotted 95-98
                     html.Div(
                         dcc.Graph(
-                            id='temp-aggregated-1995-1998-graph',
+                            id='temp-aggregated-1995-1997-graph',
                             style={"margin-bottom": "20px"}  # Adds space below the graph
                         ),
                         className='centered-content'
@@ -227,7 +230,7 @@ def init_callbacks(app):
         )
         fig2.update_xaxes(range=[1990, 2000], tickmode='linear')
 
-        # Add a shaded rectangle for 1995–1996
+        # Add a shaded rectangle for 1995–1996, to make it stand out mroe
         fig2.add_shape(
             type="rect",
             x0=1995,
@@ -247,8 +250,8 @@ def init_callbacks(app):
 
     # New callback for the aggregated temperature plot
     @app.callback(
-        Output('temp-aggregated-1995-1998-graph', 'figure'),
-        Input('temp-aggregated-1995-1998-graph', 'id')
+        Output('temp-aggregated-1995-1997-graph', 'figure'),
+        Input('temp-aggregated-1995-1997-graph', 'id')
     )
 
     def update_temp_aggregated(dummy_input):
@@ -256,7 +259,7 @@ def init_callbacks(app):
             # Melt data into long format
             global_temps_long = global_temps.melt(
                 id_vars=['Entity', 'Code', 'Year'],
-                value_vars=['1995', '1996', '1997', '1998'],
+                value_vars=['1995', '1996', '1997'],
                 var_name='Year_Value',
                 value_name='Temperature'
             )
@@ -315,7 +318,7 @@ def init_callbacks(app):
             )
             return fig
         else:
-            return px.line(title="No Aggregated Temperature Data Available for 1995–1998")
+            return px.line(title="No Aggregated Temperature Data Available for 1995–1997")
 
 
 

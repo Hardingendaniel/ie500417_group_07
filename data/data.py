@@ -20,7 +20,7 @@ def load_total_ghg_data():
 # Load and read markdown files
 def load_markdown(file_path):
     """Read and return the content of a Markdown file."""
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf-8') as file: # In order to read Ñ properly in the markdown format, added encoding to UTF-8!
         return file.read()
 
 def load_global_temp():
@@ -30,4 +30,4 @@ def load_global_temp():
 # Load all the datasets
 data = load_data()  # Load raw OWID CO2 data
 ghg_data = load_total_ghg_data()  # Load Total GHG Emissions dataset
-global_temp_data = load_global_temp() # Load the global temperature dataset
+global_temp_data = load_global_temp() # Load the global temperature datasetss
