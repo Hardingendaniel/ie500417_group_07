@@ -7,6 +7,7 @@ import pages.visualization2 as visualization2
 
 # Initialize the app
 app = Dash(__name__)
+visualization2.init_callbacks(app)
 
 # App layout with tabs
 app.layout = html.Div([
@@ -21,7 +22,3 @@ app.layout = html.Div([
 # Run the app
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-
