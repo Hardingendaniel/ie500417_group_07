@@ -84,8 +84,9 @@ layout = html.Div([
         # Tab 1: Total GHG Emission In Europe, Map
         dcc.Tab(label='Map of Europe', children=[
             html.Div(
+                #TODO: add a play year on the year timeline for the first map
                 [
-                    html.H2('Analysis for the Total Greenhouse Gas Emission in Europe'),
+                    html.H2('Total Greenhouse Gas Emission in Europe'),
                     dcc.Graph(id='choropleth-map'),
                     dcc.Slider(
                         id='year-slider',
@@ -104,7 +105,7 @@ layout = html.Div([
         ]),
 
         # Tab 2: Winter of 1995/96
-        dcc.Tab(label='Winter of 1995/96', children=[
+        dcc.Tab(label='Arctic Winter of 1995/96', children=[
             html.Div(
                 [
                     # Markdown content at the top
