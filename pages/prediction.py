@@ -165,28 +165,28 @@ fig_errors = go.Figure()
 fig_errors.add_trace(go.Bar(
     x=['ARIMA'],
     y=[arima_mse],
-    name='Mean Squared Error',
+    name='ARIMA MSE',
     marker_color='blue'
 ))
 
 fig_errors.add_trace(go.Bar(
     x=['Exponential Smoothing'],
     y=[es_mse],
-    name='Mean Squared Error',
-    marker_color='blue'
+    name='Exponential Smoothing MSE',
+    marker_color='red'
 ))
 
 fig_errors.add_trace(go.Bar(
     x=['Polynomial Regression'],
     y=[poly_mse],
-    name='Mean Squared Error',
+    name='Polynomial Regression MSE',
     marker_color='green'
 ))
 
 fig_errors.add_trace(go.Bar(
     x=['AdaBoost'],
     y=[ada_mse],
-    name='Mean Squared Error',
+    name='AdaBoost MSE',
     marker_color='purple'
 ))
 
