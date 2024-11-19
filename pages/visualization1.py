@@ -49,24 +49,27 @@ europe_aggregated = (
 europe_aggregated = europe_aggregated[europe_aggregated['year'] >= 1850]
 
 # Layout for the page
-layout = html.Div([
-    html.H1('CO₂ Emissions Over Time: By Region'),
-    dcc.Graph(figure=fig_continents),
-    html.H1('CO₂ Emissions Over Time: By European Countries'),
+layout = html.Div(
+    className='centered-content',  # Apply the centered-content class
+    children=[
+        html.H1('CO₂ Emissions Over Time: By Region'),
+        dcc.Graph(figure=fig_continents),
+        html.H1('CO₂ Emissions Over Time: By European Countries'),
 
-    # Dropdown for selecting European countries
-    dcc.Dropdown(
-        id='europe-country-selector',
-        options=[{'label': name, 'value': name} for name in europe_aggregated['country'].unique()],
-        value=['Norway', 'Sweden', 'Germany', 'United Kingdom'],  # Default selection
-        multi=True,
-        placeholder='Select countries to display',
-        style={'margin-bottom': '20px'}
-    ),
+        # Dropdown for selecting European countries
+        dcc.Dropdown(
+            id='europe-country-selector',
+            options=[{'label': name, 'value': name} for name in europe_aggregated['country'].unique()],
+            value=['Norway', 'Sweden', 'Germany', 'United Kingdom'],  # Default selection
+            multi=True,
+            placeholder='Select countries to display',
+            style={'margin-bottom': '20px'}
+        ),
 
-    # Graph for European countries
-    dcc.Graph(id='europe-graph')
-])
+        # Graph for European countries
+        dcc.Graph(id='europe-graph')
+    ]
+)
 
 
 # Callback to update the European countries graph based on selection
@@ -88,6 +91,7 @@ def update_europe_graph(selected_countries):
         labels={'co2': 'Total CO₂ Emissions (Metric Tons)', 'year': 'Year', 'country': 'Country'}
     )
     return fig
+
 
 
 

@@ -17,3 +17,45 @@ h1 {
     font-family: Arial, sans-serif;
     line-height: 1.6;
 }
+
+.information-tables {
+    border: 1px solid black;
+    justify-content: center;
+    border-collapse: collapse;
+    width: 100%;
+    align-items: center;
+}
+
+.tables-container {
+    display: flex;
+    justify-content: space-between; /* Space out the tables horizontally */
+    align-items: flex-start; /* Align the tables to the top */
+    padding: 20px; /* Add some padding */ }
+
+.dropdown {
+    width: 90%;
+    margin: 0 auto 20px auto;
+    display: block;
+}
+
+.heatmap-checklist-container {
+    display: flex;
+    flex-direction: row; /* Place heatmap and checklist side by side */
+    align-items: flex-start; /* Align to the top */
+    width: 100%; /* Ensure it spans the width of the parent */
+    padding: 20px; /* Add spacing around the container */
+}
+
+.heatmap-container {
+    width: 70%; /* Set width for heatmap */
+    margin-right: 5px; /* Add space between heatmap and checklist */
+}
+
+.checklist-container {
+    width: 25%; /* Set width for checklist */
+    display: flex;
+    flex-direction: column;
+    margin-top: 50px;
+}
+/* Ensure checklist items are in a column */
+
