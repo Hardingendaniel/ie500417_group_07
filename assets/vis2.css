@@ -5,6 +5,7 @@
     width: 75%; /* Clamp to 75% width */
     margin: 0 auto; /* Center the div horizontally */
     text-align: left;
+    font-size: x-large;
 }
 
 /* Additional styles for the app */

@@ -318,7 +318,7 @@ fig_combined.update_layout(
 )
 
 # Define the layout
-layout = html.Div(children=[
+layout = html.Div(className='centered-content', children=[
     html.H1(children='Prediction models for Total Greenhouse Gas Emissions'),
 
     dcc.Graph(
@@ -328,7 +328,7 @@ layout = html.Div(children=[
 
     dcc.Graph(
         id='Exponential smoothing forecast chart',
-        figure=fig_es
+        figure=fig_es,
     ),
 
     dcc.Graph(

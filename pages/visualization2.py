@@ -43,7 +43,7 @@ def classify_european_countries(country_result):
 def query_selected_country_temperatures(global_temp_data):
     """
     Extract temperature data from the selected countries.
-    from the years 1995 to 1998, ignoring the 'Year' column which represents months, map those to the months later on.
+    from the years 1995 to 1997, ignoring the 'Year' column which represents months, those are mapped further down.
     """
     # Only look at the Northern countries which were affected by the temperature changes, more so than more southern countries.
     desired_codes = ['NOR', 'SWE', 'FIN', 'DNK', 'ISL', 'GBR', 'IRL', 'DEU', 'NLD', 'POL', 
@@ -68,22 +68,21 @@ def query_selected_country_temperatures(global_temp_data):
 
     return result
 
-# Apply the query function
+# Apply the queries
+# Global temperatures in span of years chosen.
 global_temps = query_selected_country_temperatures(global_temp_data)
-
-
-# Proceed with other queries
-country_result = query_country_data(ghg_data)  # Query total GHG emissions
-europe_result = classify_european_countries(country_result)  # Classify European countries
+# total_ghg from 1990 to 2022.
+country_result = query_country_data(ghg_data)
+#Classify countries into North- or Southern Europe.
+europe_result = classify_european_countries(country_result)
 
 # Layout for Visualization with Tabs
 layout = html.Div([
-    html.H1('Total Greenhouse Gas Emission', style={'textAlign': 'center'}),
 
     dcc.Tabs([
 
         # Tab 1: Total GHG Emission In Europe, Map
-        dcc.Tab(label='Total Greenhouse Gas Emission Map of Europe', children=[
+        dcc.Tab(label='Map of Europe', children=[
             html.Div(
                 [
                     html.H2('Analysis for the Total Greenhouse Gas Emission in Europe'),
@@ -115,14 +114,14 @@ layout = html.Div([
                             dangerously_allow_html=True
                         ),
                         className='centered-content',
-                        style={"margin-bottom": "20px"}  # Adds space below markdown
+                        style={"margin-bottom": "20px"}
                     ),
 
                     # Aggregated countries, plotted 95-98
                     html.Div(
                         dcc.Graph(
                             id='temp-aggregated-1995-1997-graph',
-                            style={"margin-bottom": "20px"}  # Adds space below the graph
+                            style={"margin-bottom": "20px"}
                         ),
                         className='centered-content'
                     ),
@@ -141,7 +140,7 @@ layout = html.Div([
 
     ]),
 
-    # Interval component to refresh data every 30 seconds
+    # Interval component to refresh data every 30 seconds, just for testing will be removed by delivery.
     dcc.Interval(
         id='interval-component',
         interval=30 * 1000,  # 30 seconds in milliseconds
@@ -277,7 +276,7 @@ def init_callbacks(app):
                 x='Year',
                 y='Temperature',
                 color='Year_Value',
-                title="Average Temperature (1995-1998) Across Selected Countries",
+                title="Average Temperature (1995-1997) Across Selected Countries",
                 labels={
                     'Year': 'Month',
                     'Temperature': 'Average Temperature (°C)',
@@ -291,7 +290,6 @@ def init_callbacks(app):
                 '1995': '#FFA500',  # Orange
                 '1996': '#0000FF',  # Blue
                 '1997': '#FF0000',  # Red
-                '1998': '#800080'   # Purple
             }
             fig.for_each_trace(
                 lambda trace: trace.update(
