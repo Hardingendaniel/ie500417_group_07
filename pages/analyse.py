@@ -73,8 +73,9 @@ def update_heatmap(selected_columns):
             labels=dict(color='Correlation')
         )
         fig.update_layout(
-            width=800,
-            height=600
+            width=600,
+            height=600,
+            margin=dict(l=20, r=20)
         )
         fig.update_xaxes(tickangle=45)
         return fig
@@ -115,14 +116,15 @@ def update_tables(selected_year):
     )
 
     # Table for highest total_ghg
-    highest_total_ghg = filtered_data.nlargest(5, 'total_ghg')[['country', 'total_ghg']]
+    highest_total_ghg = filtered_data.nlargest(5, 'total_ghg')[['country', 'total_ghg', 'ghg_per_capita']]
 
     table_total_ghg = html.Table(
         className='information-tables',
         children=[
             html.Thead(html.Tr([html.Th(col) for col in highest_total_ghg.columns])),
             html.Tbody([
-                html.Tr([html.Td(highest_total_ghg.iloc[i][col]) for col in highest_total_ghg.columns]) for i in range(len(highest_total_ghg))
+                html.Tr([html.Td(highest_total_ghg.iloc[i][col]) for col in highest_total_ghg.columns])
+                for i in range(len(highest_total_ghg))
             ])
         ]
     )
