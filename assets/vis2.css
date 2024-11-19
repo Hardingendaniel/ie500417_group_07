@@ -13,6 +13,10 @@ h1 {
     text-align: center;
 }
 
+.tabs-title {
+    font-size: 20px;
+}
+
 .tabs-content {
     margin-top: 20px;
     font-family: Arial, sans-serif;

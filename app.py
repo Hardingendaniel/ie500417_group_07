@@ -12,10 +12,10 @@ visualizationOfEurope.init_callbacks(app)
 # App layout with tabs
 app.layout = html.Div([
     dcc.Tabs([
-        dcc.Tab(label='Analyse', children=analyse.layout),
-        dcc.Tab(label='Prediction', children=prediction.layout),
-        dcc.Tab(label='Visualization', children=visualization1.layout),
-        dcc.Tab(label='Visualization of Europe and Arctic Winter', children=visualizationOfEurope.layout)
+        dcc.Tab(className='tabs-title',label='Analyse', children=analyse.layout),
+        dcc.Tab(className='tabs-title',label='Prediction', children=prediction.layout),
+        dcc.Tab(className='tabs-title',label='Visualization', children=visualization1.layout),
+        dcc.Tab(className='tabs-title',label='Visualization of Europe and Arctic Winter', children=visualizationOfEurope.layout)
     ])
 ])
 

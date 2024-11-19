@@ -82,7 +82,7 @@ layout = html.Div([
     dcc.Tabs([
 
         # Tab 1: Total GHG Emission In Europe, Map
-        dcc.Tab(label='Map of Europe', children=[
+        dcc.Tab(className='tabs-title', label='Map of Europe', children=[
             html.Div(
                 #TODO: add a play year on the year timeline for the first map
                 [
@@ -105,7 +105,7 @@ layout = html.Div([
         ]),
 
         # Tab 2: Winter of 1995/96
-        dcc.Tab(label='Arctic Winter of 1995/96', children=[
+        dcc.Tab(className='tabs-title', label='Arctic Winter of 1995/96', children=[
             html.Div(
                 [
                     # Markdown content at the top
