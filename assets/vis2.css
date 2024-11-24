@@ -5,7 +5,11 @@
     width: 75%; /* Clamp to 75% width */
     margin: 0 auto; /* Center the div horizontally */
     text-align: left;
-    font-size: x-large;
+}
+
+.markdown-content {
+    font-size: 20px;
+    line-height: 1.4;
 }
 
 /* Additional styles for the app */
@@ -13,9 +17,27 @@ h1 {
     text-align: center;
 }
 
-.tabs-title {
-    font-size: 20px;
+/* Target the tab-container and its children, had trouble with js overriding so needed to be specific*/
+.tab-container .tab.tabs-title {
+    font-size: 18px;
+    padding: 12px 12px;
+    margin: 0;
+    line-height: 1.4; /* Comfortable vertical spacing */
+    display: inline-block;
+    text-align: center;
+    height: auto;
 }
+
+/* Styling for the 'selected/active' tab */
+.tab-container .tab.tabs-title.tab--selected {
+    background-color: #eaeaea;
+    font-weight: bold; /* Emphasize the selected tab */
+    padding: 12px 12px;
+    border-radius: 4px;
+}
+
+
+
 
 .tabs-content {
     margin-top: 20px;

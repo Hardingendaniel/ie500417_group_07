@@ -27,7 +27,12 @@ def load_global_temp():
     global_temp = pd.read_csv('data/monthly-average-surface-temperatures-by-year.csv')
     return global_temp
 
+def load_ghg_release():
+    ghg_release = pd.read_csv('data/ghg-emissions-by-gas.csv')
+    return ghg_release
+
 # Load all the datasets
 data = load_data()  # Load raw OWID CO2 data
 ghg_data = load_total_ghg_data()  # Load Total GHG Emissions dataset
 global_temp_data = load_global_temp() # Load the global temperature datasetss
+ghg_release =load_ghg_release() # Load the ghg release ratio dataset.

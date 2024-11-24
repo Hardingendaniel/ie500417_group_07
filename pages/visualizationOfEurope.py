@@ -1,4 +1,5 @@
-from dash import html, dcc, Input, Output
+from dash import html, dcc, Input, Output, State
+import plotly.graph_objects as go
 from data.data import load_markdown, ghg_data, global_temp_data
 import pandasql as sql
 import pandas as pd
@@ -7,6 +8,8 @@ import plotly.express as px
 
 # Path to the markdown file
 MARKDOWN_FILE_PATH = 'data/winter_1995_96.md'
+# Path to the markdown for the second paragraph about ozone layer.
+OZONE_MARKDOWN_FILE_PATH = 'data/global_ozone.md'
 
 # Queries
 def query_country_data(ghg_data):
@@ -84,27 +87,27 @@ layout = html.Div([
         # Tab 1: Total GHG Emission In Europe, Map
         dcc.Tab(className='tabs-title', label='Map of Europe', children=[
             html.Div(
-                #TODO: add a play year on the year timeline for the first map
                 [
-                    html.H2('Total Greenhouse Gas Emission in Europe'),
+                    html.H1('Total Greenhouse Gas Emission in Europe'),
                     dcc.Graph(id='choropleth-map'),
-                    dcc.Slider(
-                        id='year-slider',
-                        min=1990,
-                        max=2022,
-                        value=1990,
-                        marks={str(year): str(year) for year in range(1990, 2023)},
-                        step=1,  # Enables finer granularity for sliding
-                        tooltip={"placement": "bottom", "always_visible": True},
-                        updatemode='drag'  # Critical for real-time updates
-                    ),
-                    html.Div(id='selected-data', className='centered-content')
+
+                    html.Div(id='selected-data', className='centered-content',),
+
+                    # Interval component to handle automatic updates for playback
+                    dcc.Interval(
+                        id='play-interval',
+                        interval=1000,  # 1000ms = 1 second
+                        n_intervals=0,
+                        disabled=True  # Start disabled
+                    )
                 ],
-                className='centered-content'  # Apply CSS class
+                className='centered-content'
             )
         ]),
 
+
         # Tab 2: Winter of 1995/96
+        # TODO: add content to change font size on the content inside, but add centered on the div of inner divs
         dcc.Tab(className='tabs-title', label='Arctic Winter of 1995/96', children=[
             html.Div(
                 [
@@ -114,17 +117,24 @@ layout = html.Div([
                             id='markdown-content',
                             dangerously_allow_html=True
                         ),
-                        className='centered-content',
-                        style={"margin-bottom": "20px"}
+                        className='centered-content markdown-content',
                     ),
 
-                    # Aggregated countries, plotted 95-98
+                    # Aggregated countries, plotted 95-97
                     html.Div(
                         dcc.Graph(
                             id='temp-aggregated-1995-1997-graph',
-                            style={"margin-bottom": "20px"}
                         ),
                         className='centered-content'
+                    ),
+
+                    # New Markdown content for global ozone
+                    html.Div(
+                        dcc.Markdown(
+                            id='ozone-markdown-content',
+                            dangerously_allow_html=True
+                        ),
+                        className='centered-content markdown-content',
                     ),
 
                     # Existing GHG Aggregated Trend Graph
@@ -139,6 +149,7 @@ layout = html.Div([
             )
         ]),
 
+
     ]),
 
     # Interval component to refresh data every 30 seconds, just for testing will be removed by delivery.
@@ -151,25 +162,26 @@ layout = html.Div([
 
 def init_callbacks(app):
     """Register callbacks for visualization2."""
-    
-    # Callback for the choropleth map in the first tab
+
+
     @app.callback(
         Output('choropleth-map', 'figure'),
-        Input('year-slider', 'value')  # Triggered continuously as the slider is dragged
+        Input('choropleth-map', 'id')  # Trigger the callback
     )
-    def update_map(selected_year):
-        # Filter the data for the selected year
-        filtered_df = europe_result[europe_result['year'] == selected_year].copy()
-        
+    def update_map(dummy_input):
+        # Filter the data for the selected year range
+        filtered_df = europe_result[(europe_result['year'] >= 1990) & (europe_result['year'] <= 2022)].copy()
+
         # Rename columns for user readability
         filtered_df = filtered_df.rename(columns={"total_ghg": "Total Greenhouse Gas Emission"})
 
-        # Create the choropleth map
+        # Create the choropleth map with animation
         fig = px.choropleth(
             filtered_df,
             locations="iso_code",
             color="Total Greenhouse Gas Emission",
-            hover_name="country",
+            animation_frame="year",  # Enable animation
+            custom_data=["country", "year"],  # Pass both country and year
             color_continuous_scale=[
                 (0.0, "#ffffe0"),  # Light yellow
                 (0.2, "#ffd59b"),  # Light orange
@@ -179,13 +191,14 @@ def init_callbacks(app):
                 (1.0, "#a50026")   # Dark red
             ],
             range_color=(0, 4e9),  # Set range from 0 to 4 billion
-            scope="europe"  # Focus on Europe only
+            scope="world",        # Focus on Europe only
         )
 
         # Configure the map layout
         fig.update_geos(
             projection_type="natural earth",
-            center={"lat": 50, "lon": 10},
+            center={"lat": 50, "lon": 10},  # Center on Central Europe
+            projection_scale=2.2,  # Enlarge the globe slightly
             showcoastlines=True,
             coastlinecolor="Gray",
             showland=True,
@@ -193,18 +206,52 @@ def init_callbacks(app):
             showcountries=True
         )
 
-        # Add hover template
-        fig.update_traces(
-            hovertemplate=(f"<b>%{{hovertext}}</b><br>Year: {selected_year}<br>Total Emission: %{{z}}")
-        )
         fig.update_layout(
+            height=450,          # Keep the overall layout height fixed
+            width=1200,          # Keep the width fixed
+            margin={"l": 10, "r": 10, "t": 10, "b": 60},  # Add a bottom margin to align the timeline
             coloraxis_colorbar=dict(
-                title=f"Total Greenhouse Gas Emission in Year {selected_year}",
-                tickvals=[0, 1e9, 2e9, 3e9, 4e9],  # Explicit tick so I can rename them to billion from b
-                ticktext=["0 billion", "1 billion", "2 billion", "3 billion", "4 billion"],
+                x=0.85,  # Position the colorbar closer to the plot
+                title="GHG Per Year"
             )
-)
+        )
+
+        # Update hover template
+        fig.update_traces(
+            hovertemplate=(
+                "<b>%{customdata[0]}</b><br>"  # Country
+                "Year = %{customdata[1]}<br>"  # Year
+                "Total Emission = %{z}"        # Emission (GHG)
+            )
+        )
+
+        # Customize timeline slider to show "Year ="
+        fig.update_layout(
+            sliders=[{
+                "currentvalue": {
+                    "prefix": "Year = ",  # Set "Year =" with spacing and capitalization
+                    "font": {"size": 20, "color": "black",}
+                }
+            }],
+            coloraxis_colorbar=dict(
+                title="GHG Per Year",
+                tickvals=[0, 1e9, 2e9, 3e9, 4e9],
+                ticktext=["0 billion", "1 billion", "2 billion", "3 billion", "4 billion"],
+
+            )
+        )
+
+        for frame in fig.frames:
+            frame_year = frame.name  # The Frame name is the current "frame"'s year.
+            frame.data[0].hovertemplate = (
+                "<b>%{customdata[0]}</b><br>"
+                f"Year = {frame_year}<br>"  # Update the year
+                "Total Emission = %{z}"
+            )
+
         return fig
+
+
 
     # Callback for the GHG aggregated trend graph in the second tab
     @app.callback(
@@ -320,7 +367,6 @@ def init_callbacks(app):
             return px.line(title="No Aggregated Temperature Data Available for 1995–1997")
 
 
-
     # Callback to update the markdown content dynamically
     @app.callback(
         Output('markdown-content', 'children'),
@@ -329,3 +375,13 @@ def init_callbacks(app):
     def update_markdown(n_intervals):
         # Reload the markdown
         return load_markdown(MARKDOWN_FILE_PATH)
+
+    # Callback to update the ozone markdown content dynamically
+    @app.callback(
+        Output('ozone-markdown-content', 'children'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_ozone_markdown(n_intervals):
+        # Reload the markdown for ozone data
+        return load_markdown(OZONE_MARKDOWN_FILE_PATH)
+
