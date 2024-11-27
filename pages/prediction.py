@@ -114,7 +114,7 @@ future_predictions_ada = pd.DataFrame({
     'Predicted_total_ghg': predictions_ada_future
 })
 
-print(f"Best parameters found: {grid_search.best_params_}")
+#print(f"Best parameters found: {grid_search.best_params_}")
 
 # Calculate Errors
 arima_mse = mean_squared_error(test, forecast_arima)

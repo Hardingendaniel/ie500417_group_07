@@ -47,12 +47,35 @@ layout = html.Div([
                         className='centered-content markdown-content'
                     ),
                     # The GHG per sector plot's div
-                            html.Div(
-                                dcc.Graph(
-                                    id='ghg-category-plot'
-                                ),
-                                className='centered-content'
+                    html.Div(
+                        className='centered-content',
+                        children=[
+                            # Dropdown selector which defaults to 'World' (due to the filter farther down.)
+                            html.Div([
+                                html.H2("Select Region"),
+                                dcc.Dropdown(
+                                    id='region-selector-category',
+                                    options=[
+                                        {'label': 'Africa', 'value': 'Africa'},
+                                        {'label': 'Asia', 'value': 'Asia'},
+                                        {'label': 'Europe', 'value': 'Europe'},
+                                        {'label': 'North America', 'value': 'North America'},
+                                        {'label': 'Oceania', 'value': 'Oceania'},
+                                        {'label': 'South America', 'value': 'South America'},
+                                        {'label': 'World', 'value': 'World'}
+                                    ],
+                                    value='Europe',  # Default to 'Europe'
+                                    clearable=False
+                                )
+                            ], style={'margin-bottom': '20px'}),
+
+                            # Graph for category emissions
+                            dcc.Graph(
+                                id='ghg-category-plot'
                             )
+                        ]
+                    ),
+
                 ]
             )
         ]),
@@ -69,7 +92,7 @@ layout = html.Div([
                         className='dropdown',
                         id='year-selector',
                         options=[{'label': year, 'value': year} for year in range(1990, 2022)],
-                        value=1990,  # Default selected year
+                        value=1990,
                         clearable=False,
                     ),
                     html.Div(id='tables-container'),
@@ -210,10 +233,14 @@ def init_callbacksalso(app):
 
     @app.callback(
         Output('ghg-category-plot', 'figure'),
-        Input('interval-component', 'n_intervals')
+        [Input('region-selector-category', 'value'), Input('interval-component', 'n_intervals')]
     )
-    def update_category_plot(n_intervals):
+    def update_category_plot(selected_region, n_intervals):
         df = load_gh_by_sector()
+
+        # Filter data by region
+        if selected_region != 'World':
+            df = df[df['Entity'] == selected_region]
 
         category_columns = [
             'Greenhouse gas emissions from agriculture',

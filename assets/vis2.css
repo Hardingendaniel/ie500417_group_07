@@ -12,9 +12,22 @@
     line-height: 1.4;
 }
 
-/* Additional styles for the app */
 h1 {
     text-align: center;
+}
+
+.centered-image-container {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.centered-image {
+    width: 60%;
+    height: auto;
+    display: block;
+    margin: auto;
 }
 
 /* Target the tab-container and its children, had trouble with js overriding so needed to be specific*/

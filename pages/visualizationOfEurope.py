@@ -169,9 +169,11 @@ layout = html.Div([
                 className='centered-content'
             )
         ]),
-        dcc.Tab(className='tabs-title', label='Passive House', children=[
+        # Tab: EU Directive & Passive House
+        dcc.Tab(className='tabs-title', label='EU Directive & Passive House', children=[
             html.Div(
                 [
+                    html.H1('EU Directives and Passive House Design'),
                     # Markdown content for Passive House text
                     html.Div(
                         dcc.Markdown(
@@ -179,11 +181,19 @@ layout = html.Div([
                             dangerously_allow_html=True
                         ),
                         className='centered-content markdown-content',
+                    ),
+                    html.Div(
+                        html.Img(
+                            src='/assets/smarthouse.png',
+                            className='centered-image'
+                        ),
+                        className='centered-image-container'
                     )
                 ],
                 className='centered-content'
             )
         ]),
+
     ]),
 
     # Interval component to refresh data every 30 seconds, just for testing will be removed by delivery.
