@@ -22,7 +22,7 @@ clean_data['total_ghg'] = pd.to_numeric(clean_data['total_ghg'], errors='coerce'
 clean_data = clean_data.dropna(subset=['total_ghg'])
 
 # Resample Data to Annual_data
-annual_data = clean_data['total_ghg'].resample('A').sum()
+annual_data = clean_data['total_ghg'].resample('YE').sum()
 
 
 # Train-Test Split
@@ -37,7 +37,7 @@ model_arima_fit = model_arima.fit(method_kwargs={'maxiter': 200})
 
 forecast_arima = model_arima_fit.forecast(steps=years_to_predict)
 last_year_arima = annual_data.index[-1].year
-forecast_index_arima = pd.date_range(start=f'{last_year_arima}-12-31', periods=len(test), freq='A')
+forecast_index_arima = pd.date_range(start=f'{last_year_arima}-12-31', periods=len(test), freq='YE')
 
 # Exponential Smoothing
 model_es = ExponentialSmoothing(
@@ -50,7 +50,7 @@ model_es = ExponentialSmoothing(
 model_fit = model_es.fit()
 
 last_year = annual_data.index[-1].year
-forecast_index_es = pd.date_range(start=f'{last_year}', periods=years_to_predict, freq='A')
+forecast_index_es = pd.date_range(start=f'{last_year}', periods=years_to_predict, freq='YE')
 forecast_es = model_fit.forecast(steps=years_to_predict)
 
 # Polynomial Regression

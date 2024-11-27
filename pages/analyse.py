@@ -1,23 +1,25 @@
 from dash import html, dcc, Input, Output, callback
 import pandas as pd
 import plotly.express as px
-from data.data import data, load_markdown, load_ghg_release
+from data.data import data, load_markdown, load_ghg_release, load_gh_by_sector
 
 # Filter numeric columns for correlation calculation
 numeric_df = data.select_dtypes(include='number')
 columns_of_interest = ['total_ghg', 'co2', 'gdp', 'population', 'cumulative_co2',  'nitrous_oxide', 'methane']
 
 # First paragraph
-MARKDOWN_FILE_PATH = 'data/explanation_of_ghg.md'
+MARKDOWN_FILE_PATH = 'data/markdown/explanation_of_ghg.md'
+# Second paragraph
+MARKDOWN_FILE_PATH2 = 'data/markdown/where_ghg_comes_from.md'
 
 # Define layout with Tabs
 layout = html.Div([
     dcc.Tabs([
-        dcc.Tab(className='tabs-title', label='Greenhouse Gas', children=[
+        dcc.Tab(className='tabs-title', label='Greenhouse Gases', children=[
             html.Div(
                 className='centered-content',
                 children=[
-                    html.H1("New Analysis Content"),
+                    html.H1("Explanation of Greenhouse Gases"),
                     # Markdown content
                     html.Div(
                         dcc.Markdown(
@@ -33,20 +35,30 @@ layout = html.Div([
                         ),
                         className='centered-content'
                     ),
-                    # New div for the image
                     html.Div(
-                        html.Img(
-                            src='/assets/ghg-by-sector.png',
-                            style={'width': '40%', 'display': 'block', 'margin': 'auto'}
-                        ),
-                        className='centered-content'
-                    )
+                        [
+                            html.H2("Human Impact on the Greenhouse Effect", style={'textAlign': 'center'}),
+                            dcc.Markdown(
+                                id='markdown-content-tab2-p2',
+                                dangerously_allow_html=True
+
+                            )
+                        ],
+                        className='centered-content markdown-content'
+                    ),
+                    # The GHG per sector plot's div
+                            html.Div(
+                                dcc.Graph(
+                                    id='ghg-category-plot'
+                                ),
+                                className='centered-content'
+                            )
                 ]
             )
         ]),
 
 
-        # Tab 2: Existing analysis content
+        # Tab 2:Analysis with Data
         dcc.Tab(className='tabs-title', label='Analysis with Data', children=[
             html.Div(
                 className='centered-content',
@@ -102,6 +114,11 @@ def init_callbacksalso(app):
         Input('interval-component', 'n_intervals'))
     def update_markdown(n_intervals):
         return load_markdown(MARKDOWN_FILE_PATH)
+    @app.callback(
+        Output('markdown-content-tab2-p2', 'children'),
+        Input('interval-component', 'n_intervals'))
+    def update_markdown2(n_intervals):
+        return load_markdown(MARKDOWN_FILE_PATH2)
 
     @app.callback(
         Output('ghg-stacked-chart', 'figure'),
@@ -152,7 +169,6 @@ def init_callbacksalso(app):
                 'Year': 'Year',
                 'Gas Type': 'Gas Type'
             },
-            title='Greenhouse Gas Emissions by Gas (as % of Total)',
             template='plotly_white',
             hover_data={
                 'Percentage': ':.2f',
@@ -163,7 +179,7 @@ def init_callbacksalso(app):
 
         # Update hover template to show what info I want specifically
         fig.update_traces(
-            hoveron='points+fills',  # why doesn't fills work :()
+            hoveron='points',  # why doesn't fills work :()
             hovertemplate=(
                 "<b>Gas Type:</b> %{customdata[0]}<br>"
                 "<b>Year:</b> %{x}<br>"
@@ -184,13 +200,94 @@ def init_callbacksalso(app):
                 title='Percentage (%)',
                 ticksuffix='%'
             ),
-            legend=dict(title='Gas Type'),
+            legend=dict(title='Gas Type', traceorder='reversed'),
             height=400,
             margin=dict(l=20, r=20, t=50, b=20)
         )
 
 
         return fig
+
+    @app.callback(
+        Output('ghg-category-plot', 'figure'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_category_plot(n_intervals):
+        df = load_gh_by_sector()
+
+        category_columns = [
+            'Greenhouse gas emissions from agriculture',
+            'Greenhouse gas emissions from land use change and forestry',
+            'Greenhouse gas emissions from waste',
+            'Greenhouse gas emissions from buildings',
+            'Greenhouse gas emissions from industry',
+            'Greenhouse gas emissions from manufacturing and construction',
+            'Greenhouse gas emissions from transport',
+            'Greenhouse gas emissions from electricity and heat',
+            'Fugitive emissions of greenhouse gases from energy production',
+            'Greenhouse gas emissions from other fuel combustion',
+            'Greenhouse gas emissions from bunker fuels'
+        ]
+
+        df_grouped = df.groupby('Year')[category_columns].sum().reset_index()
+
+        latest_year = df_grouped['Year'].max()
+
+        # Get total emissions for each category in the latest year
+        latest_emissions = (
+            df_grouped[df_grouped['Year'] == latest_year]
+            .melt(value_vars=category_columns, var_name='Category', value_name='Emissions')
+            .sort_values(by='Emissions', ascending=False)
+        )
+
+        sorted_categories = latest_emissions['Category'].tolist()
+
+        df_long = pd.melt(
+            df_grouped,
+            id_vars=['Year'],
+            value_vars=category_columns,
+            var_name='Category',
+            value_name='Emissions'
+        )
+
+        df_long['Category'] = df_long['Category'].str.replace(
+            "Greenhouse gas emissions from ", "", regex=False
+        ).str.replace(
+            "Fugitive emissions of greenhouse gases from ", "Fugitive emissions from ", regex=False
+        ).str.lower().str.capitalize()
+
+        # Update category orders to capitalize the first word.
+        sorted_categories_simple = [
+            category.replace("Greenhouse gas emissions from ", "").replace(
+                "Fugitive emissions of greenhouse gases from ", "Fugitive emissions from "
+            ).lower().capitalize()
+            for category in sorted_categories
+        ]
+
+        fig = px.line(
+            df_long,
+            x='Year',
+            y='Emissions',
+            color='Category',
+            labels={
+                'Emissions': 'Emissions (kt CO₂e)',
+                'Year': 'Year',
+                'Category': 'Sector'
+            },
+            category_orders={'Category': sorted_categories_simple}
+        )
+
+        fig.update_layout(
+            template='plotly_white',
+            height=400,
+            margin=dict(l=20, r=20, t=50, b=20),
+            legend_title=dict(
+                text="Greenhouse gas emissions by sector"
+            )
+        )
+
+        return fig
+
 
 
     # Callback to update the heatmap based on selected attributes

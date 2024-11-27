@@ -7,9 +7,10 @@ import plotly.express as px
 
 
 # Path to the markdown file
-MARKDOWN_FILE_PATH = 'data/winter_1995_96.md'
+MARKDOWN_FILE_PATH = 'data/markdown/winter_1995_96.md'
 # Path to the markdown for the second paragraph about ozone layer.
-OZONE_MARKDOWN_FILE_PATH = 'data/global_ozone.md'
+OZONE_MARKDOWN_FILE_PATH = 'data/markdown/global_ozone.md'
+PASSIVE_HOUSE_FILE_PATH = 'data/markdown/passive_houses.md'
 
 # Queries
 def query_country_data(ghg_data):
@@ -104,6 +105,26 @@ layout = html.Div([
                 className='centered-content'
             )
         ]),
+        dcc.Tab(className='tabs-title', label='Map of Europe (Duplicate)', children=[
+            html.Div(
+                [
+                    html.H1('Total Greenhouse Gas Emission in Europe (Duplicate)'),
+                    dcc.Graph(id='choropleth-map-duplicate'),
+
+                    html.Div(id='selected-data-duplicate', className='centered-content'),
+
+                    # Interval component to handle automatic updates for playback
+                    dcc.Interval(
+                        id='play-interval-duplicate',
+                        interval=1000,  # 1000ms = 1 second
+                        n_intervals=0,
+                        disabled=True  # Start disabled
+                    )
+                ],
+                className='centered-content'
+            )
+        ]),
+
 
 
         # Tab 2: Winter of 1995/96
@@ -148,8 +169,21 @@ layout = html.Div([
                 className='centered-content'
             )
         ]),
-
-
+        dcc.Tab(className='tabs-title', label='Passive House', children=[
+            html.Div(
+                [
+                    # Markdown content for Passive House text
+                    html.Div(
+                        dcc.Markdown(
+                            id='passive-house-content',
+                            dangerously_allow_html=True
+                        ),
+                        className='centered-content markdown-content',
+                    )
+                ],
+                className='centered-content'
+            )
+        ]),
     ]),
 
     # Interval component to refresh data every 30 seconds, just for testing will be removed by delivery.
@@ -198,7 +232,7 @@ def init_callbacks(app):
         fig.update_geos(
             projection_type="natural earth",
             center={"lat": 50, "lon": 10},  # Center on Central Europe
-            projection_scale=2.2,  # Enlarge the globe slightly
+            projection_scale=2.2,
             showcoastlines=True,
             coastlinecolor="Gray",
             showland=True,
@@ -207,9 +241,9 @@ def init_callbacks(app):
         )
 
         fig.update_layout(
-            height=450,          # Keep the overall layout height fixed
-            width=1200,          # Keep the width fixed
-            margin={"l": 10, "r": 10, "t": 10, "b": 60},  # Add a bottom margin to align the timeline
+            height=450,
+            width=1200,
+            margin={"l": 10, "r": 10, "t": 10, "b": 60},
             coloraxis_colorbar=dict(
                 x=0.85,  # Position the colorbar closer to the plot
                 title="GHG Per Year"
@@ -229,7 +263,7 @@ def init_callbacks(app):
         fig.update_layout(
             sliders=[{
                 "currentvalue": {
-                    "prefix": "Year = ",  # Set "Year =" with spacing and capitalization
+                    "prefix": "Year = ",
                     "font": {"size": 20, "color": "black",}
                 }
             }],
@@ -251,6 +285,85 @@ def init_callbacks(app):
 
         return fig
 
+    # The temporarily (identical) map that should be changed to see changes from year to year, colors may need to be changed? And the scale. TODO: STEN :)
+    @app.callback(
+        Output('choropleth-map-duplicate', 'figure'),
+        Input('choropleth-map-duplicate', 'id')
+    )
+    def update_duplicate_map(dummy_input):
+        filtered_df = europe_result[(europe_result['year'] >= 1990) & (europe_result['year'] <= 2022)].copy()
+        filtered_df = filtered_df.rename(columns={"total_ghg": "Total Greenhouse Gas Emission (Duplicate)"})
+
+        fig = px.choropleth(
+            filtered_df,
+            locations="iso_code",
+            color="Total Greenhouse Gas Emission (Duplicate)",
+            animation_frame="year",
+            custom_data=["country", "year"],
+            color_continuous_scale=[
+                (0.0, "#ffffe0"),
+                (0.2, "#ffd59b"),
+                (0.4, "#fdae61"),
+                (0.6, "#f46d43"),
+                (0.8, "#d73027"),
+                (1.0, "#a50026")
+            ],
+            range_color=(0, 4e9),
+            scope="world"
+        )
+
+        fig.update_geos(
+            projection_type="natural earth",
+            center={"lat": 50, "lon": 10},
+            projection_scale=2.2,
+            showcoastlines=True,
+            coastlinecolor="Gray",
+            showland=True,
+            landcolor="lightgrey",
+            showcountries=True
+        )
+
+        fig.update_layout(
+            height=450,
+            width=1200,
+            margin={"l": 10, "r": 10, "t": 10, "b": 60},
+            coloraxis_colorbar=dict(
+                x=0.85,
+                title="GHG Per Year (Duplicate)"
+            )
+        )
+
+        fig.update_traces(
+            hovertemplate=(
+                "<b>%{customdata[0]}</b><br>"
+                "Year = %{customdata[1]}<br>"
+                "Total Emission = %{z}"
+            )
+        )
+
+        fig.update_layout(
+            sliders=[{
+                "currentvalue": {
+                    "prefix": "Year = ",
+                    "font": {"size": 20, "color": "black"}
+                }
+            }],
+            coloraxis_colorbar=dict(
+                title="GHG Per Year (Duplicate)",
+                tickvals=[0, 1e9, 2e9, 3e9, 4e9],
+                ticktext=["0 billion", "1 billion", "2 billion", "3 billion", "4 billion"],
+            )
+        )
+
+        for frame in fig.frames:
+            frame_year = frame.name
+            frame.data[0].hovertemplate = (
+                "<b>%{customdata[0]}</b><br>"
+                f"Year = {frame_year}<br>"
+                "Total Emission = %{z}"
+            )
+
+        return fig
 
 
     # Callback for the GHG aggregated trend graph in the second tab
@@ -385,3 +498,11 @@ def init_callbacks(app):
         # Reload the markdown for ozone data
         return load_markdown(OZONE_MARKDOWN_FILE_PATH)
 
+    # 4th tab, passive house text.
+    @app.callback(
+        Output('passive-house-content', 'children'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_passive_house_markdown(n_intervals):
+        # Reload the markdown content for Passive House
+        return load_markdown(PASSIVE_HOUSE_FILE_PATH)

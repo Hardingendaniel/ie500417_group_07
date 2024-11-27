@@ -1,0 +1,11 @@
+1. The largest source of GHG release is burning fossil fuels, these fossil fuels are used for electricity, heat and transportion. Fossil fuels include oil, coal and natural gas. Both commercial and residential sectors in many countries burn fossil fuels for heat, which signficiantly contributes so GHG emission. Some countries such as Norway uses a cleaner source of electricty, <sup>[3]</sup> which produces less GHG compared to fossil fuels. <sup>[2]</sup>
+   1. Norway's targets for reducing GHG emissions and to reduce overall emission has lead the country to maintain a low carbon footprint, while still supporting the population's growing need for electricity. The use of primarily renewable energy, helps reduce overall GHG emissions. <sup>[3]</sup>
+2. Agriculture: Producing food produces a significant amount of GHG, through livestock farming, the use of synthetic fertilizers, farm fields etc. Livestock in particular produces methane, which is a very potent greenhouse gas.
+3. Industrial Processes: where various things are manufactured. Such as cement, steel, plastics and other types. These processes often involve the combustion of fossil fuels and chemical reactions, all which emit carbon dioxide and other gases.
+4. Transportation. All items manufactured needs to be transported from A to B, the majority of vehicles require gas and diesel to function. In the US in 2022, Transportation was 28-29% of the total GHG emission alone. <sup>[1]</sup> With a growing population worldwide, the need for transportation increases, from delivering goods to daily commute.
+5. Deforestation: cutting down forests for its timber, reduces the number of trees that can absorb carbon dioxide. In addition, the process of deforestation itself releases GHGs. The forests act as "carbon sinks", removing them increases the "Greenhouse Effect". <sup>[4]</sup>
+
+[1]: https://www.epa.gov/ghgemissions/sources-greenhouse-gas-emissions
+[2]: https://www.eea.europa.eu/publications/eu-renewable-electricity-has-reduced
+[3]: https://www.iea.org/reports/norway-2022/executive-summary
+[4]: https://www.worldwildlife.org/threats/deforestation-and-forest-degradation
