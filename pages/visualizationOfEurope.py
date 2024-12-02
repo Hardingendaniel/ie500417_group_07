@@ -1,9 +1,9 @@
 from dash import html, dcc, Input, Output, State
-import plotly.graph_objects as go
 from data.data import load_markdown, ghg_data, global_temp_data
 import pandasql as sql
 import pandas as pd
 import plotly.express as px
+import numpy as np
 
 
 # Path to the markdown file
@@ -11,6 +11,8 @@ MARKDOWN_FILE_PATH = 'data/markdown/winter_1995_96.md'
 # Path to the markdown for the second paragraph about ozone layer.
 OZONE_MARKDOWN_FILE_PATH = 'data/markdown/global_ozone.md'
 PASSIVE_HOUSE_FILE_PATH = 'data/markdown/passive_houses.md'
+# Path to the markdown file for relative emissions
+MARKDOWN_RELATIVE_EMISSIONS = 'data/markdown/relative_emissions_description.md'
 
 # Queries
 def query_country_data(ghg_data):
@@ -42,6 +44,28 @@ def classify_european_countries(country_result):
         lambda x: 'Northern' if x in northern_europe else ('Southern' if x in southern_europe else None)
     )
     return country_result[country_result['north_or_south'].notnull()]
+
+# Calculate relative emissions
+def calculate_relative_emissions(europe_result):
+    base_year = 1990
+    # Extract emissions for the base year
+    base_emissions = europe_result[europe_result['year'] == base_year][['iso_code', 'total_ghg']]
+    base_emissions = base_emissions.rename(columns={'total_ghg': 'base_ghg'})
+
+    # Merge base emissions with the main dataframe
+    europe_result = europe_result.merge(base_emissions, on='iso_code', how='left')
+
+    # Calculate relative emission
+    europe_result['relative_emission'] = europe_result['total_ghg'] / europe_result['base_ghg']
+
+    # Replace infinite values with NaN
+    europe_result['relative_emission'] = europe_result['relative_emission'].replace([np.inf, -np.inf], np.nan)
+
+    # Calculate log-transformed relative emissions
+    europe_result['log_relative_emission'] = np.log(europe_result['relative_emission'].replace(0, np.nan))
+
+    return europe_result
+
 
 # Query for grabbing the temperatures from selected countries and years.
 def query_selected_country_temperatures(global_temp_data):
@@ -79,6 +103,8 @@ global_temps = query_selected_country_temperatures(global_temp_data)
 country_result = query_country_data(ghg_data)
 #Classify countries into North- or Southern Europe.
 europe_result = classify_european_countries(country_result)
+# Calculate relative emissions for the countries.
+europe_result = calculate_relative_emissions(europe_result)
 
 # Layout for Visualization with Tabs
 layout = html.Div([
@@ -105,13 +131,38 @@ layout = html.Div([
                 className='centered-content'
             )
         ]),
-        dcc.Tab(className='tabs-title', label='Map of Europe (Duplicate)', children=[
+        dcc.Tab(className='tabs-title', label='Map of Europe with relative log', children=[
             html.Div(
                 [
-                    html.H1('Total Greenhouse Gas Emission in Europe (Duplicate)'),
+                    dcc.Markdown(
+                        id='relative-emissions-description',
+                        className='centered-content markdown-content',
+                        dangerously_allow_html=True
+                    ),
+
+                    html.H1('Total Greenhouse Gas Emission in Europe '),
                     dcc.Graph(id='choropleth-map-duplicate'),
 
                     html.Div(id='selected-data-duplicate', className='centered-content'),
+
+                    # Slider for adjusting zoom level
+                    html.Div([
+                        html.Label('Adjust Zoom Level:'),
+                        dcc.Slider(
+                            id='zoom-slider',
+                            min=1.5,
+                            max=3.0,
+                            step=0.1,
+                            value=2.2,
+                            marks={
+                                1.5: '1.5x',
+                                2.0: '2.0x',
+                                2.5: '2.5x',
+                                3.0: '3.0x'
+                            }
+                        )
+
+                    ], style={'width': '50%', 'padding': '20px'}),
 
                     # Interval component to handle automatic updates for playback
                     dcc.Interval(
@@ -124,8 +175,6 @@ layout = html.Div([
                 className='centered-content'
             )
         ]),
-
-
 
         # Tab 2: Winter of 1995/96
         # TODO: add content to change font size on the content inside, but add centered on the div of inner divs
@@ -255,7 +304,7 @@ def init_callbacks(app):
             width=1200,
             margin={"l": 10, "r": 10, "t": 10, "b": 60},
             coloraxis_colorbar=dict(
-                x=0.85,  # Position the colorbar closer to the plot
+                x=0.85,
                 title="GHG Per Year"
             )
         )
@@ -263,9 +312,9 @@ def init_callbacks(app):
         # Update hover template
         fig.update_traces(
             hovertemplate=(
-                "<b>%{customdata[0]}</b><br>"  # Country
-                "Year = %{customdata[1]}<br>"  # Year
-                "Total Emission = %{z}"        # Emission (GHG)
+                "<b>%{customdata[0]}</b><br>"
+                "Year = %{customdata[1]}<br>"
+                "Total Emission = %{z}"
             )
         )
 
@@ -298,34 +347,52 @@ def init_callbacks(app):
     # The temporarily (identical) map that should be changed to see changes from year to year, colors may need to be changed? And the scale. TODO: STEN :)
     @app.callback(
         Output('choropleth-map-duplicate', 'figure'),
-        Input('choropleth-map-duplicate', 'id')
-    )
-    def update_duplicate_map(dummy_input):
-        filtered_df = europe_result[(europe_result['year'] >= 1990) & (europe_result['year'] <= 2022)].copy()
-        filtered_df = filtered_df.rename(columns={"total_ghg": "Total Greenhouse Gas Emission (Duplicate)"})
+        Input('choropleth-map-duplicate', 'id'),
+        Input('zoom-slider', 'value')
 
+    )
+    def update_duplicate_map(dummy_input, zoom_value):
+        # Filter the data for the selected year range
+        filtered_df = europe_result[
+            (europe_result['year'] >= 1990) &
+            (europe_result['year'] <= 2022)
+            ].copy()
+
+        # Drop rows with missing log-relative emissions
+        filtered_df = filtered_df.dropna(subset=['log_relative_emission'])
+
+        # Rename columns for user readability
+        filtered_df = filtered_df.rename(columns={
+            "log_relative_emission": "Log Relative Emission"
+        })
+
+        #  Get the min and max log-relative emissions
+        log_rel_emission_min = filtered_df["Log Relative Emission"].min()
+        log_rel_emission_max = filtered_df["Log Relative Emission"].max()
+
+        custom_diverging_scale = [
+            (0.0, "#0000FF"),
+            (0.5, "#FFFFFF"),
+            (1.0, "#FF0000")
+        ]
+
+        # Create the choropleth map with animation
         fig = px.choropleth(
             filtered_df,
             locations="iso_code",
-            color="Total Greenhouse Gas Emission (Duplicate)",
+            color="Log Relative Emission",
             animation_frame="year",
             custom_data=["country", "year"],
-            color_continuous_scale=[
-                (0.0, "#ffffe0"),
-                (0.2, "#ffd59b"),
-                (0.4, "#fdae61"),
-                (0.6, "#f46d43"),
-                (0.8, "#d73027"),
-                (1.0, "#a50026")
-            ],
-            range_color=(0, 4e9),
-            scope="world"
+            color_continuous_scale=custom_diverging_scale,
+            range_color=(-2, 2),
+            scope="europe"
         )
 
+        # Configure the map layout
         fig.update_geos(
             projection_type="natural earth",
             center={"lat": 50, "lon": 10},
-            projection_scale=2.2,
+            projection_scale=zoom_value,
             showcoastlines=True,
             coastlinecolor="Gray",
             showland=True,
@@ -333,48 +400,51 @@ def init_callbacks(app):
             showcountries=True
         )
 
+        # Update layout properties
         fig.update_layout(
             height=450,
             width=1200,
             margin={"l": 10, "r": 10, "t": 10, "b": 60},
             coloraxis_colorbar=dict(
                 x=0.85,
-                title="GHG Per Year (Duplicate)"
+                title="Log(Relative GHG Emissions)"
             )
         )
 
+        # Update hover template
         fig.update_traces(
             hovertemplate=(
                 "<b>%{customdata[0]}</b><br>"
                 "Year = %{customdata[1]}<br>"
-                "Total Emission = %{z}"
+                "Log(Relative Emission) = %{z:.2f}"
             )
         )
 
+        # Customize timeline slider to show "Year ="
         fig.update_layout(
             sliders=[{
                 "currentvalue": {
-                    "prefix": "Year = ",
-                    "font": {"size": 20, "color": "black"}
+                    "prefix": "Year: ",
+                    "font": {"size": 18, "color": "black"}
                 }
             }],
             coloraxis_colorbar=dict(
-                title="GHG Per Year (Duplicate)",
-                tickvals=[0, 1e9, 2e9, 3e9, 4e9],
-                ticktext=["0 billion", "1 billion", "2 billion", "3 billion", "4 billion"],
+                title="Log(Relative GHG Emissions)",
+                tickvals=[-2, -1, 0, 1, 2],
+                ticktext=["-2", "-1", "0", "1", "2"],
             )
         )
 
+        # Update hover template
         for frame in fig.frames:
             frame_year = frame.name
             frame.data[0].hovertemplate = (
                 "<b>%{customdata[0]}</b><br>"
                 f"Year = {frame_year}<br>"
-                "Total Emission = %{z}"
+                "Log(Relative Emission) = %{z:.2f}"
             )
 
         return fig
-
 
     # Callback for the GHG aggregated trend graph in the second tab
     @app.callback(
@@ -516,3 +586,12 @@ def init_callbacks(app):
     def update_passive_house_markdown(n_intervals):
         # Reload the markdown content for Passive House
         return load_markdown(PASSIVE_HOUSE_FILE_PATH)
+
+    # Callback to update the relative emissions description
+    @app.callback(
+        Output('relative-emissions-description', 'children'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_relative_emissions_description(n_intervals):
+        # Reload the markdown content for relative emissions
+        return load_markdown(MARKDOWN_RELATIVE_EMISSIONS)
