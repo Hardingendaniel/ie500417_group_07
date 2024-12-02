@@ -1,4 +1,4 @@
-from dash import dcc, html
+from dash import dcc, html, Input, Output
 import plotly.graph_objs as go
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error
@@ -11,7 +11,15 @@ from sklearn.model_selection import GridSearchCV
 import numpy as np
 import plotly.express as px
 from sklearn.ensemble import AdaBoostRegressor
-from data.data import data
+from data.data import data, load_total_ghg_data, load_markdown
+
+# Path to markdown files
+ARIMA_MODEL_EXPLANATION = 'data/markdown/arima_model_explanation.md'
+EXPONENTIAL_SMOOTHING_EXPLANATION = 'data/markdown/exponential_smoothing_explanation.md'
+POLYNOMIAL_REGRESSION_EXPLANATION = 'data/markdown/polynomial_regression_explanation.md'
+ADABOOST_REGRESSION_EXPLANATION = 'data/markdown/adaboost_regression_explanation.md'
+COMPARISON_GRAPH_EXPLANATION = 'data/markdown/comparison_graph_explanation.md'
+MODEL_ERROR_COMPARISON = 'data/markdown/model_error_comparison.md'
 
 # List of European countries
 european_countries = [
@@ -23,6 +31,12 @@ european_countries = [
     "Sweden", "Switzerland", "Turkey", "Ukraine", "United Kingdom", "Vatican City"
 ]
 
+# The other dataset, dataset 2
+total_ghg_data = load_total_ghg_data()
+europe_ghg_data = total_ghg_data[total_ghg_data['Entity'].isin(european_countries)]
+europe_ghg_by_year = europe_ghg_data.groupby('Year').sum().reset_index()
+
+
 # Filter Data for European countries
 europe_data = data[data['country'].isin(european_countries)].dropna(subset=["total_ghg", "year"]).copy()
 europe_data['year'] = europe_data['year'].astype(int)
@@ -33,6 +47,11 @@ europe_data = europe_data.dropna(subset=['total_ghg'])
 
 # Resample Data to Annual Data
 annual_data = europe_data['total_ghg'].resample('YE').sum()
+
+# Align year ranges
+all_years = pd.DataFrame({'Year': range(annual_data.index.min().year, 2023)})
+europe_ghg_by_year = pd.merge(all_years, europe_ghg_by_year, on='Year', how='left')
+
 
 # Train-Test Split
 train_size = int(len(annual_data) * 0.9)
@@ -282,11 +301,26 @@ fig_combined.add_trace(go.Scatter(
     line=dict(color='purple', dash='dot')
 ))
 
+# European Total GHG Emissions
+fig_combined.add_trace(go.Scatter(
+    x=europe_ghg_by_year['Year'],
+    y=europe_ghg_by_year['Annual greenhouse gas emissions in CO₂ equivalents'],
+    mode='lines',
+    name='European Total GHG Emissions',
+    line=dict(color='orange', dash='solid'),
+    yaxis='y2'
+))
+
 # Update the layout
 fig_combined.update_layout(
     title='Total Greenhouse Gas Emissions Forecast Comparison',
     xaxis_title='Year',
-    yaxis_title='Total Greenhouse Gas Emissions',
+    yaxis_title='Total Greenhouse Gas Emissions (CO₂ Equivalents)',
+    yaxis2=dict(
+        title='European Total GHG Emissions',
+        overlaying='y',
+        side='right'
+    ),
     legend=dict(x=0, y=1),
     hovermode='x unified'
 )
@@ -298,6 +332,24 @@ arima_mse = mean_squared_error(test, forecast_arima)
 es_mse = mean_squared_error(test, forecast_es)
 poly_mse = mean_squared_error(test, future_predictions_poly['Predicted_total_ghg'])
 ada_mse = mean_squared_error(test, future_predictions_ada['Predicted_total_ghg'])
+
+# The other dataset, dataset 2
+fig_total_ghg = go.Figure()
+
+fig_total_ghg.add_trace(go.Scatter(
+    x=europe_ghg_by_year['Year'],
+    y=europe_ghg_by_year['Annual greenhouse gas emissions in CO₂ equivalents'],
+    mode='lines',
+    name='Total GHG Emissions',
+    line=dict(color='red')
+))
+
+fig_total_ghg.update_layout(
+    title='Total Greenhouse Gas Emissions Over Time for european countries',
+    xaxis_title='Year',
+    yaxis_title='Annual Greenhouse Gas Emissions (CO₂ Equivalents)',
+    hovermode='x unified'
+)
 
 # Create the error comparison chart
 fig_errors = go.Figure()
@@ -341,33 +393,74 @@ fig_errors.update_layout(
 layout = html.Div(className='centered-content', children=[
     html.H1(children='Prediction models for Total Greenhouse Gas Emissions In Europe'),
 
-    dcc.Graph(
-        id='Arima-forecast-chart',
-        figure=fig_arima
+    dcc.Markdown(id='arima-model-explanation', dangerously_allow_html=True),
+    dcc.Graph(id='Arima-forecast-chart', figure=fig_arima),
+
+    dcc.Markdown(id='exponential-smoothing-explanation', dangerously_allow_html=True),
+    dcc.Graph(id='Exponential smoothing forecast chart', figure=fig_es),
+
+    dcc.Markdown(id='polynomial-regression-explanation', dangerously_allow_html=True),
+    dcc.Graph(id='Polynomial regression forecast chart', figure=fig_poly),
+
+    dcc.Markdown(id='adaboost-regression-explanation', dangerously_allow_html=True),
+    dcc.Graph(id='AdaBoost forecast chart', figure=fig_ada),
+
+    # Markdown for Comparison Graph Explanation
+    dcc.Markdown(
+        id='comparison-graph-explanation',
+        dangerously_allow_html=True
     ),
 
-    dcc.Graph(
-        id='Exponential smoothing forecast chart',
-        figure=fig_es,
-    ),
-
-    dcc.Graph(
-        id='AdaBoost forecast chart',
-        figure=fig_ada
-    ),
-
-    dcc.Graph(
-        id='Polynomial regression forecast chart',
-        figure=fig_poly
-    ),
-
+    # Graph for Comparison Chart
     dcc.Graph(
         id='Comparison-chart',
         figure=fig_combined
     ),
 
-dcc.Graph(
-        id='error-comparison-chart',
-        figure=fig_errors
-    )
+    dcc.Markdown(id='model-error-comparison', dangerously_allow_html=True),
+    dcc.Graph(id='model-error-comparison-chart', figure=fig_errors)
+
 ])
+def init_callbacks(app):
+
+    @app.callback(
+        Output('arima-model-explanation', 'children'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_arima_model_explanation(n_intervals):
+        return load_markdown(ARIMA_MODEL_EXPLANATION)
+
+    @app.callback(
+        Output('exponential-smoothing-explanation', 'children'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_exponential_smoothing_explanation(n_intervals):
+        return load_markdown(EXPONENTIAL_SMOOTHING_EXPLANATION)
+
+    @app.callback(
+        Output('polynomial-regression-explanation', 'children'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_polynomial_regression_explanation(n_intervals):
+        return load_markdown(POLYNOMIAL_REGRESSION_EXPLANATION)
+
+    @app.callback(
+        Output('adaboost-regression-explanation', 'children'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_adaboost_regression_explanation(n_intervals):
+        return load_markdown(ADABOOST_REGRESSION_EXPLANATION)
+
+    @app.callback(
+        Output('comparison-graph-explanation', 'children'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_comparison_graph_explanation(n_intervals):
+        return load_markdown(COMPARISON_GRAPH_EXPLANATION)
+
+    @app.callback(
+        Output('model-error-comparison', 'children'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_model_error_comparison(n_intervals):
+        return load_markdown(MODEL_ERROR_COMPARISON)
