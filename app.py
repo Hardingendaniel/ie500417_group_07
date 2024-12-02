@@ -9,6 +9,7 @@ import pages.visualizationOfEurope as visualizationOfEurope
 app = Dash(__name__)
 visualizationOfEurope.init_callbacks(app)
 analyse.init_callbacksalso(app)
+prediction.init_callbacks(app)
 
 
 # App layout with tabs
