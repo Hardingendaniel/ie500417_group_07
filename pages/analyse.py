@@ -213,7 +213,7 @@ def init_callbacksalso(app):
             mode='none'
         )
 
-        # Update layout
+        # Update layout with the source annotation
         fig.update_layout(
             xaxis=dict(
                 title='Year',
@@ -226,11 +226,24 @@ def init_callbacksalso(app):
             ),
             legend=dict(title='Gas Type', traceorder='reversed'),
             height=400,
-            margin=dict(l=20, r=20, t=50, b=20)
+            margin=dict(l=0, r=0, t=0, b=80),
+            annotations=[  # Add source annotation here
+                dict(
+                    text="Source for dataset: https://ourworldindata.org/grapher/ghg-emissions-by-gas",
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=-0.2,
+                    xanchor='center',
+                    yanchor='top',
+                    font=dict(size=12, color="gray")
+                )
+            ]
         )
 
-
         return fig
+
 
     @app.callback(
         Output('ghg-category-plot', 'figure'),
@@ -307,11 +320,24 @@ def init_callbacksalso(app):
 
         fig.update_layout(
             template='plotly_white',
-            height=400,
-            margin=dict(l=20, r=20, t=50, b=20),
+            height=500,
+            margin=dict(l=0, r=0, t=0, b=100),
             legend_title=dict(
                 text="Greenhouse gas emissions by sector"
-            )
+            ),
+            annotations=[
+                dict(
+                    text="Source for dataset: https://ourworldindata.org/grapher/ghg-emissions-by-sector",
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=-0.15,
+                    xanchor='center',
+                    yanchor='top',
+                    font=dict(size=12, color="gray")
+                )
+        ]
         )
 
         return fig

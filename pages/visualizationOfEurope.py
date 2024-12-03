@@ -1,9 +1,10 @@
 from dash import html, dcc, Input, Output, State
-from data.data import load_markdown, ghg_data, global_temp_data
+from data.data import load_markdown, ghg_data, global_temp_data, load_epc
 import pandasql as sql
 import pandas as pd
 import plotly.express as px
 import numpy as np
+from dash.exceptions import PreventUpdate
 
 
 # Path to the markdown file
@@ -112,69 +113,71 @@ layout = html.Div([
     dcc.Tabs([
 
         # Tab 1: Total GHG Emission In Europe, Map
-        dcc.Tab(className='tabs-title', label='Map of Europe', children=[
-            html.Div(
-                [
-                    html.H1('Total Greenhouse Gas Emission in Europe'),
-                    dcc.Graph(id='choropleth-map'),
-
-                    html.Div(id='selected-data', className='centered-content',),
-
-                    # Interval component to handle automatic updates for playback
-                    dcc.Interval(
-                        id='play-interval',
-                        interval=1000,  # 1000ms = 1 second
-                        n_intervals=0,
-                        disabled=True  # Start disabled
-                    )
-                ],
-                className='centered-content'
-            )
-        ]),
-        dcc.Tab(className='tabs-title', label='Map of Europe with relative log', children=[
-            html.Div(
-                [
-                    dcc.Markdown(
-                        id='relative-emissions-description',
-                        className='centered-content markdown-content',
-                        dangerously_allow_html=True
-                    ),
-
-                    html.H1('Total Greenhouse Gas Emission in Europe '),
-                    dcc.Graph(id='choropleth-map-duplicate'),
-
-                    html.Div(id='selected-data-duplicate', className='centered-content'),
-
-                    # Slider for adjusting zoom level
-                    html.Div([
-                        html.Label('Adjust Zoom Level:'),
-                        dcc.Slider(
-                            id='zoom-slider',
-                            min=1.5,
-                            max=3.0,
-                            step=0.1,
-                            value=2.2,
-                            marks={
-                                1.5: '1.5x',
-                                2.0: '2.0x',
-                                2.5: '2.5x',
-                                3.0: '3.0x'
-                            }
+        dcc.Tab(
+            className='tabs-title', 
+            label='Map of Europe', 
+            children=[
+                html.Div(
+                    [
+                        html.H1('Total Greenhouse Gas Emission in Europe'),
+                        html.Div(
+                            dcc.Graph(id='choropleth-map', config={'responsive': True},
+                                    style={'height': '100%', 'width': '100%'}),
+                            className='map-container'
+                        ),
+                        html.Div(id='selected-data', className='centered-content'),
+                        # Interval component to handle automatic updates for playback
+                        dcc.Interval(
+                            id='play-interval',
+                            interval=2000,
+                            n_intervals=0,
+                            disabled=True
                         )
+                    ],
+                    className='centered-content'
+                )
+            ]
+        ),
 
-                    ], style={'width': '50%', 'padding': '20px'}),
+        dcc.Tab(
+            className='tabs-title',
+            label='Map of Europe with relative log',
+            children=[
+                html.Div(
+                    [
+                        html.H1(
+                            'Total Relative Emissions in Europe',
+                            className='centered-heading',
+                            style={'text-align': 'center', 'margin-bottom': '20px'}  # Optional inline styles
+                        ),
+                        dcc.Markdown(
+                            id='relative-emissions-description',
+                            className='centered-content markdown-content',
+                            dangerously_allow_html=True
+                        ),
+                        # Wrap the map in a div for additional styling
+                        html.Div(
+                            dcc.Graph(
+                                id='choropleth-map-duplicate',
+                                config={'responsive': True},
+                                style={'height': '100%', 'width': '100%'}
+                            ),
+                            className='map-container'  # Added container for map styling
+                        ),
+                        html.Div(id='selected-data-duplicate', className='centered-content'),
+                        # Interval component to handle automatic updates for playback
+                        dcc.Interval(
+                            id='play-interval-duplicate',
+                            interval=2000,
+                            n_intervals=0,
+                            disabled=True
+                        )
+                    ],
+                    className='centered-content'
+                )
+            ]
+        ),
 
-                    # Interval component to handle automatic updates for playback
-                    dcc.Interval(
-                        id='play-interval-duplicate',
-                        interval=1000,  # 1000ms = 1 second
-                        n_intervals=0,
-                        disabled=True  # Start disabled
-                    )
-                ],
-                className='centered-content'
-            )
-        ]),
 
         # Tab 2: Winter of 1995/96
         # TODO: add content to change font size on the content inside, but add centered on the div of inner divs
@@ -231,17 +234,19 @@ layout = html.Div([
                         ),
                         className='centered-content markdown-content',
                     ),
+                    # New graph to replace the image
                     html.Div(
-                        html.Img(
-                            src='/assets/smarthouse.png',
-                            className='centered-image'
+                        dcc.Graph(
+                            id='energy-efficiency-plot',
+                            config={'responsive': True}
                         ),
-                        className='centered-image-container'
+                        className='centered-content'
                     )
                 ],
                 className='centered-content'
             )
         ]),
+
 
     ]),
 
@@ -259,7 +264,7 @@ def init_callbacks(app):
 
     @app.callback(
         Output('choropleth-map', 'figure'),
-        Input('choropleth-map', 'id')  # Trigger the callback
+        Input('choropleth-map', 'id')
     )
     def update_map(dummy_input):
         # Filter the data for the selected year range
@@ -273,8 +278,8 @@ def init_callbacks(app):
             filtered_df,
             locations="iso_code",
             color="Total Greenhouse Gas Emission",
-            animation_frame="year",  # Enable animation
-            custom_data=["country", "year"],  # Pass both country and year
+            animation_frame="year",
+            custom_data=["country", "year"],
             color_continuous_scale=[
                 (0.0, "#ffffe0"),  # Light yellow
                 (0.2, "#ffd59b"),  # Light orange
@@ -287,11 +292,11 @@ def init_callbacks(app):
             scope="world",        # Focus on Europe only
         )
 
-        # Configure the map layout
+        # Map layout
         fig.update_geos(
             projection_type="natural earth",
-            center={"lat": 50, "lon": 10},  # Center on Central Europe
-            projection_scale=2.2,
+            center={"lat": 50, "lon": 10},  # Center on Central Europe (as we are looking at Europe)
+            projection_scale=2.8,
             showcoastlines=True,
             coastlinecolor="Gray",
             showland=True,
@@ -300,14 +305,13 @@ def init_callbacks(app):
         )
 
         fig.update_layout(
-            height=450,
-            width=1200,
-            margin={"l": 10, "r": 10, "t": 10, "b": 60},
+            margin={"l": 0, "r": 0, "t": 0, "b": 0},  # No margins
             coloraxis_colorbar=dict(
-                x=0.85,
+                x=1,
                 title="GHG Per Year"
             )
         )
+
 
         # Update hover template
         fig.update_traces(
@@ -318,21 +322,33 @@ def init_callbacks(app):
             )
         )
 
-        # Customize timeline slider to show "Year ="
         fig.update_layout(
+            margin={"l": 0, "r": 0, "t": 0, "b": 0},
+            coloraxis_colorbar=dict(
+                x=1,
+                title="GHG Per Year"
+            ),
             sliders=[{
                 "currentvalue": {
                     "prefix": "Year = ",
-                    "font": {"size": 20, "color": "black",}
+                    "font": {"size": 20, "color": "black"}
                 }
             }],
-            coloraxis_colorbar=dict(
-                title="GHG Per Year",
-                tickvals=[0, 1e9, 2e9, 3e9, 4e9],
-                ticktext=["0 billion", "1 billion", "2 billion", "3 billion", "4 billion"],
-
-            )
+            annotations=[
+                dict(
+                    text="Source for dataset: https://ourworldindata.org/greenhouse-gas-emissions",
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=-0.1,
+                    xanchor='center',
+                    yanchor='top',
+                    font=dict(size=12, color="gray")
+                )
+            ]
         )
+
 
         for frame in fig.frames:
             frame_year = frame.name  # The Frame name is the current "frame"'s year.
@@ -344,14 +360,12 @@ def init_callbacks(app):
 
         return fig
 
-    # The temporarily (identical) map that should be changed to see changes from year to year, colors may need to be changed? And the scale. TODO: STEN :)
     @app.callback(
         Output('choropleth-map-duplicate', 'figure'),
         Input('choropleth-map-duplicate', 'id'),
-        Input('zoom-slider', 'value')
 
     )
-    def update_duplicate_map(dummy_input, zoom_value):
+    def update_duplicate_map(dummy_input):
         # Filter the data for the selected year range
         filtered_df = europe_result[
             (europe_result['year'] >= 1990) &
@@ -392,7 +406,7 @@ def init_callbacks(app):
         fig.update_geos(
             projection_type="natural earth",
             center={"lat": 50, "lon": 10},
-            projection_scale=zoom_value,
+            projection_scale=1.2,
             showcoastlines=True,
             coastlinecolor="Gray",
             showland=True,
@@ -402,13 +416,25 @@ def init_callbacks(app):
 
         # Update layout properties
         fig.update_layout(
-            height=450,
-            width=1200,
-            margin={"l": 10, "r": 10, "t": 10, "b": 60},
+            height=550,
+            margin={"l": 0, "r": 0, "t": 0, "b": 0},
             coloraxis_colorbar=dict(
                 x=0.85,
                 title="Log(Relative GHG Emissions)"
-            )
+            ),
+                annotations=[
+                dict(
+                    text="Source for dataset: https://ourworldindata.org/greenhouse-gas-emissions",
+                    showarrow=False,
+                    xref="paper",  # Relative to the entire graph
+                    yref="paper",
+                    x=0.5,
+                    y=-0.1,
+                    xanchor='center',
+                    yanchor='top',
+                    font=dict(size=12, color="gray")
+                )
+            ]
         )
 
         # Update hover template
@@ -464,10 +490,23 @@ def init_callbacks(app):
         )
         fig2.update_traces(mode='lines', line=dict(width=2))
         fig2.update_layout(
-            xaxis_title='Year',
-            yaxis=dict(title='Total GHG Emissions', range=[0, 10e9]),
-            legend_title='Region'
-        )
+                xaxis_title='Year',
+                yaxis=dict(title='Total GHG Emissions', range=[0, 10e9]),
+                legend_title='Region',
+                annotations=[
+                    dict(
+                        text="Source for dataset: https://ourworldindata.org/greenhouse-gas-emissions",
+                        showarrow=False,
+                        xref="paper",
+                        yref="paper",
+                        x=0.5,
+                        y=-0.2,
+                        xanchor='center',
+                        yanchor='top',
+                        font=dict(size=12, color="gray")
+                    )
+                ]
+            )
         fig2.update_xaxes(range=[1990, 2000], tickmode='linear')
 
         # Add a shaded rectangle for 1995–1996, to make it stand out mroe
@@ -553,12 +592,104 @@ def init_callbacks(app):
                     ticktext=list(month_mapping.values())
                 ),
                 yaxis=dict(title='Average Temperature (°C)'),
-                legend_title_text='Year'
+                legend_title_text='Year',
+                annotations=[
+                dict(
+                    text="Source for dataset: https://ourworldindata.org/grapher/monthly-average-surface-temperatures-by-year",
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=-0.2,  # Position it below the label 🐱‍🏍
+                    xanchor='center',
+                    yanchor='top',
+                    font=dict(size=12, color="gray")
+                )
+            ]
             )
             return fig
         else:
             return px.line(title="No Aggregated Temperature Data Available for 1995–1997")
 
+    @app.callback(
+        Output('energy-efficiency-plot', 'figure'),
+        Input('energy-efficiency-plot', 'id')
+    )
+    def update_energy_efficiency_plot(dummy_input):
+        # Load the dataset using load_epc
+        dataframe = load_epc()
+
+        # Calculate the average energy consumption
+        energy_columns = [col for col in dataframe.columns if col.startswith('Econs')]
+        if not energy_columns:
+            raise KeyError("No energy consumption columns found starting with 'Econs'")
+
+        dataframe['avg_energy_consumption'] = dataframe[energy_columns].mean(axis=1)
+
+        # Map to the different eras instead of using 1-4.
+        age_band_mapping = {
+            1: "Pre-1919",
+            2: "1919-1944",
+            3: "1945-1964",
+            4: "Post-1964"
+        }
+        dataframe['Age of Property'] = dataframe['PROP_AGE_BAND'].map(age_band_mapping)
+
+        epc_order = ['A/B', 'C', 'D', 'E', 'F/G']
+        epc_colors = {
+            'A/B': '#007F3B',    # Green
+            'C': '#6DBD46',      # Yellow-Green
+            'D': '#FFE300',      # Yellow
+            'E': '#FF7F00',      # Orange
+            'F/G': '#FF0000'     # Red
+        }
+        dataframe['EPC'] = pd.Categorical(dataframe['EPC'], categories=epc_order, ordered=True)
+
+        dataframe = dataframe[dataframe['EPC'].notna()]
+
+        fig = px.box(
+            dataframe,
+            x='Age of Property',  # Use mapped age band labels
+            y='avg_energy_consumption',
+            color='EPC',
+            color_discrete_map=epc_colors,  # Apply the green to red mapping (to match EPC rating irl)
+            category_orders={'EPC': epc_order}, # order the epc alphabetically
+            labels={'Age of Property': 'Age of Property', 'avg_energy_consumption': 'Energy Consumption (kWh)'},
+            title="Energy Consumption Distribution by Property Age and EPC Ratings"
+        )
+
+        fig.update_traces(
+            hovertemplate=(
+                "<b>Age of Property:</b> %{x}<br>"
+                "<b>Energy Consumption (kWh):</b> %{y:.2f}<br>"
+                "<b>EPC Rating:</b> %{fullData.name}<br>"
+                "<extra></extra>"
+            )
+        )
+
+        # Customize layout for better readability
+        fig.update_layout(
+            boxmode='group',  # Group boxes by EPC alphabetically
+            annotations=[
+                dict(
+                    text="Source for dataset: https://www.gov.uk/government/statistics/national-energy-efficiency-data-framework-need-anonymised-data-2024",
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=-0.2,
+                    xanchor='center',
+                    yanchor='top',
+                    font=dict(size=12, color="gray")
+                )
+            ],
+            margin={"l": 40, "r": 40, "t": 40, "b": 100},
+            xaxis=dict(title='Age of Property', categoryorder='array', categoryarray=list(age_band_mapping.values())),
+            yaxis=dict(title='Energy Consumption (kWh)'),
+            legend=dict(title="EPC Rating")
+        )
+
+        return fig
 
     # Callback to update the markdown content dynamically
     @app.callback(
