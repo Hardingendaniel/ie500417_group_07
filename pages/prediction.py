@@ -393,22 +393,23 @@ fig_errors.update_layout(
 layout = html.Div(className='centered-content', children=[
     html.H1(children='Prediction models for Total Greenhouse Gas Emissions In Europe'),
 
-    dcc.Markdown(id='arima-model-explanation', dangerously_allow_html=True),
+    dcc.Markdown(id='arima-model-explanation', dangerously_allow_html=True, className='markdown-content'),
     dcc.Graph(id='Arima-forecast-chart', figure=fig_arima),
 
-    dcc.Markdown(id='exponential-smoothing-explanation', dangerously_allow_html=True),
+    dcc.Markdown(id='exponential-smoothing-explanation', dangerously_allow_html=True, className='markdown-content'),
     dcc.Graph(id='Exponential smoothing forecast chart', figure=fig_es),
 
-    dcc.Markdown(id='polynomial-regression-explanation', dangerously_allow_html=True),
+    dcc.Markdown(id='polynomial-regression-explanation', dangerously_allow_html=True, className='markdown-content'),
     dcc.Graph(id='Polynomial regression forecast chart', figure=fig_poly),
 
-    dcc.Markdown(id='adaboost-regression-explanation', dangerously_allow_html=True),
+    dcc.Markdown(id='adaboost-regression-explanation', dangerously_allow_html=True, className='markdown-content'),
     dcc.Graph(id='AdaBoost forecast chart', figure=fig_ada),
 
     # Markdown for Comparison Graph Explanation
     dcc.Markdown(
         id='comparison-graph-explanation',
-        dangerously_allow_html=True
+        dangerously_allow_html=True,
+        className='markdown-content'
     ),
 
     # Graph for Comparison Chart
@@ -417,7 +418,7 @@ layout = html.Div(className='centered-content', children=[
         figure=fig_combined
     ),
 
-    dcc.Markdown(id='model-error-comparison', dangerously_allow_html=True),
+    dcc.Markdown(id='model-error-comparison', dangerously_allow_html=True, className='markdown-content'),
     dcc.Graph(id='model-error-comparison-chart', figure=fig_errors)
 
 ])
