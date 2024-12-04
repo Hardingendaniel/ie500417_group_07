@@ -1,22 +1,29 @@
 # Total Greenhouse Gas Emissions Forecast Comparison
 
-This graph illustrates the **total greenhouse gas (GHG) emissions forecast** for European countries from 1990 to 2022, alongside predictions for future years using various forecasting methods. The data includes both historical actual emissions and modeled forecasts using ARIMA, Exponential Smoothing, Polynomial Regression, and AdaBoost.
+This graph presents the total greenhouse gas (GHG) emissions for European countries from 1990 to 2020, 
+along with forecasts extending into future years using three different forecasting methods: ARIMA, Exponential 
+Smoothing, and AdaBoost Regression. The visualization includes both historical emissions data and model-generated forecasts,
+providing a comprehensive view of past trends and future projections.
 
 ### Key Features:
-- **Red Line**: Historical GHG emissions data for Europe.
-- **Blue Dashed Line**: ARIMA forecast for future GHG emissions.
-- **Yellow Dotted Line**: Exponential Smoothing forecast for future GHG emissions.
-- **Green Dashed Line**: Polynomial Regression forecast.
-- **Purple Dotted Line**: AdaBoost forecast model.
+- **BLue Line:** Actual GHG emissions data for Europe from 1990 to 2020.
+- **Dashed lines (Validation forecasts)**
+    - **ARIMA Validation Forecast:** Represents the ARIMA model's predictions during the validation period.
+    - **Exponential Smoothing Validation Forecast:** Represents the Exponential Smoothing model's predictions during the validation period.
+    - **AdaBoost Validation Forecast:** Represents the AdaBoost model's predictions during the validation period.
+- **Dotted lines (Future forecasts)**
+    - **ARIMA Future Forecast:** Shows the ARIMA model's forecasted GHG emissions for future years.
+    - **Exponential Smoothing Future Forecast:** Shows the Exponential Smoothing model's forecasted GHG emissions for future years.
+    - **AdaBoost Future Forecast:** Shows the AdaBoost model's forecasted GHG emissions for future years.
 
-### Additional Data:
-- **Orange Line (Secondary Y-Axis)**: Total European GHG emissions, aggregated across all european countries from another dataset that has data after 2020. 
-- This allows for comparison of model predictions.
 
 ### Insights:
-- The historical emissions data shows a gradual decline in total GHG emissions since the 1990s.
-- Forecasting models predict further decreases in emissions, with slight variation in the rate of decline depending on the methodology.
-- The orange line highlights the overall aggregated trend of emissions in Europe, which aligns closely with the historical data and forecasts.
-
+- **Historical Trends:** The historical emissions data shows a gradual decline in total GHG emissions since the 1990s.
+- **Model Predictions:** Forecasting models predict further decreases in emissions, with slight variation in the rate of decline depending on the methodology.
+- **Comparative Analysis:** By displaying all models together, we can compare their forecasts, assessing which models align more closely with historical trends and each other.
+- 
 ### Notes:
-- The secondary y-axis (on the right) shows the total European GHG emissions scale for better visualization of aggregated data.
+- **Validation Period:** The dashed lines during the validation period allow us to assess each model's accuracy by comparing predictions 
+against actual data.
+- **Future Uncertainty:** While future forecasts provide valuable insights, they are subject to uncertainties, especially considering potential 
+policy changes, technological advancements, or unforeseen events affecting emissions.
