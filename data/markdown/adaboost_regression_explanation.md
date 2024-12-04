@@ -1,6 +1,9 @@
 # AdaBoost Regression
 
-**AdaBoost (Adaptive Boosting) Regression** is an ensemble learning technique that combines multiple weak learners to form a strong predictive model.
+**AdaBoost (Adaptive Boosting) Regression** 
+Adaptive Boosting (AdaBoost) Regression is an ensemble learning technique that combines multiple weak learners to 
+create a strong predictive model. By focusing sequentially on the errors of previous models, AdaBoost enhances overall 
+forecasting accuracy.
 
 ## **Why AdaBoost Regression?**
 - **Boosting Capability:** Enhances model performance by sequentially focusing on errors from previous iterations.
