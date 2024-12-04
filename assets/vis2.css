@@ -2,7 +2,7 @@
 
 /* Clamp, horizontal content */
 .centered-content {
-    width: 75%; /* Clamp to 75% width */
+    width: 85%; /* Clamp to 85% width */
     margin: 0 auto; /* Center the div horizontally */
     text-align: left;
 }
@@ -14,6 +14,19 @@
 
 h1 {
     text-align: center;
+}
+
+.map-container {
+    max-width: 100%;
+    width: auto;
+    height: 550px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.map-container .dash-graph {
+    width: 100%;
+    height: auto;
 }
 
 .centered-image-container {
@@ -28,6 +41,16 @@ h1 {
     height: auto;
     display: block;
     margin: auto;
+}
+
+.tabs-content div:not(.active) {
+    visibility: hidden;
+    position: absolute;
+}
+
+.tabs-content div.active {
+    visibility: visible;
+    position: relative;
 }
 
 /* Target the tab-container and its children, had trouble with js overriding so needed to be specific*/
