@@ -1,23 +1,22 @@
 # Model Error Comparison
 
-This bar chart compares the **Mean Squared Error (MSE)** of four forecasting models used to predict greenhouse gas (GHG) emissions in Europe. 
-MSE quantifies the difference between the predicted values and the actual data, with lower values indicating better model performance.
+This bar chart compares the Mean Squared Error (MSE) of the three forecasting models used to predict greenhouse gas (GHG)
+emissions in Europe. MSE quantifies the average squared difference between the predicted values and the actual data, with 
+lower values indicating better model performance.
 
 ### Models Evaluated:
-- **ARIMA (Blue)**:
-  - Demonstrates the lowest error among the models, indicating strong predictive accuracy for the dataset.
-- **Exponential Smoothing (Red)**:
-  - Performs better than Polynomial Regression and AdaBoost, with moderate error values.
-- **Polynomial Regression (Green)**:
-  - Shows higher error levels, suggesting it may struggle to fit the trends in the data effectively.
-- **AdaBoost (Purple)**:
-  - Produces the highest error, indicating less suitability for this dataset compared to other methods.
-
+- Exponential Smoothing:
+  - Lowest MSE, indicating it captures the data trends most effectively and provides the most accurate 
+forecasts among the models evaluated.
+- ARIMA:
+  - Performs well with a slightly higher MSE than Exponential Smoothing, suggesting strong predictive accuracy but slightly less optimal for this dataset.
+- AdaBoost Regression:
+  - Exhibits the highest MSE among the three models, suggesting it may struggle to fit the trends in the data as effectively as the other methods.
+  - 
 ### Insights:
-- **ARIMA** is the most accurate model, suggesting it effectively captures the trends in historical data.
-- **Exponential Smoothing** also performs reasonably well, benefiting from its ability to adapt to variations.
-- **Polynomial Regression** and **AdaBoost** show significantly higher errors, highlighting limitations in their applicability for this dataset.
+- **Exponential Smoothing** is the most accurate model for this dataset, effectively modeling the underlying trends in greenhouse gas emission
+- **ARIMA** also demonstrates good predictive capability, but its higher MSE compared to Exponential Smoothing indicates it may not capture all nuances in the data.
+- **AdaBoost Regression** shows higher error levels, highlighting limitations in its applicability for this specific time series data.
 
 ### Notes:
-- Error is displayed on the y-axis in MSE units.
-- These results can guide model selection for future forecasting tasks, prioritizing accuracy and interpretability.
+- Error values are displayed on the y-axis in MSE units, providing a quantitative measure of each model's forecasting accuracy.
