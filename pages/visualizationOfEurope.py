@@ -647,17 +647,34 @@ def init_callbacks(app):
 
         dataframe = dataframe[dataframe['EPC'].notna()]
 
+        # Identify and filter outliers using the Interquartile Range (IQR) method (handle extreme values)
+        # IQR is difference between Q3 and Q1, measuring spread of the middle data. Uses this to find and filter out outliers.
+        # https://www.statology.org/find-outliers-with-iqr/
+        Q1 = dataframe['avg_energy_consumption'].quantile(0.25)
+        Q3 = dataframe['avg_energy_consumption'].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        # Filter data to exclude outliers
+        filtered_dataframe = dataframe[
+            (dataframe['avg_energy_consumption'] >= lower_bound) &
+            (dataframe['avg_energy_consumption'] <= upper_bound)
+        ]
+
+        # Plot the filtered data
         fig = px.box(
-            dataframe,
+            filtered_dataframe,
             x='Age of Property',  # Use mapped age band labels
             y='avg_energy_consumption',
             color='EPC',
-            color_discrete_map=epc_colors,  # Apply the green to red mapping (to match EPC rating irl)
-            category_orders={'EPC': epc_order}, # order the epc alphabetically
+            color_discrete_map=epc_colors,  # Apply the green to red mapping (to match EPC rating IRL)
+            category_orders={'EPC': epc_order},  # Order the EPC alphabetically
             labels={'Age of Property': 'Age of Property', 'avg_energy_consumption': 'Energy Consumption (kWh)'},
-            title="Energy Consumption Distribution by Property Age and EPC Ratings"
+            title="Energy Consumption Distribution by Property Age and EPC Ratings (Outliers Removed)"
         )
 
+        # Customize hovertemplate for better interactivity
         fig.update_traces(
             hovertemplate=(
                 "<b>Age of Property:</b> %{x}<br>"
@@ -690,6 +707,7 @@ def init_callbacks(app):
         )
 
         return fig
+
 
     # Callback to update the markdown content dynamically
     @app.callback(
