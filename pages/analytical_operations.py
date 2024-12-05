@@ -78,6 +78,7 @@ class AnalyticalOperations:
             labels={'total_ghg': 'Total GHG Emissions', 'country': 'Country'},
             title='Top 5 Countries by Total GHG Emissions'
         )
+        fig.update_yaxes(range=[0, None], fixedrange=True)
 
         fig.update_traces(hovertemplate='<br>'.join([
             'Country: %{x}',
@@ -98,6 +99,7 @@ class AnalyticalOperations:
             labels={'total_ghg': 'Total GHG Emissions', 'country': 'Country'},
             title='Top 5 Countries by Total GHG Emissions in Europe'
         )
+        fig_europe.update_yaxes(range=[0, None], fixedrange=True)
 
         fig.update_traces(hovertemplate='<br>'.join([
             'Country: %{x}',
@@ -125,7 +127,7 @@ class AnalyticalOperations:
             world_pie_pop_data,
             names='country',
             values='population',
-            title='Respective countries Population Distribution (Top 5 vs Rest of Europe)'
+            title='Population Distribution (Top 5 vs Rest of World)'
         )
         world_pop_chart = dcc.Graph(figure=world_pop_fig)
 
@@ -142,7 +144,7 @@ class AnalyticalOperations:
             europe_pie_data,
             names='country',
             values='total_ghg',
-            title='GHG Emissions Distribution (Top 5 European vs Rest of World)'
+            title='GHG Emissions Distribution (Top 5 European vs Rest of Europe)'
         )
 
         europe_pie_chart = dcc.Graph(
