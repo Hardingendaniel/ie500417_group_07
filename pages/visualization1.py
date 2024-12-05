@@ -37,6 +37,7 @@ fig_continents = px.line(
     title='CO₂ Emissions Over Time: By Region',
     labels={'co2': 'Total CO₂ Emissions (Metric Tons)', 'year': 'Year', 'region': 'Region'}
 )
+fig_continents.update_xaxes(range=[1850, 2022], fixedrange=True)
 
 # Filter and aggregate data for European countries
 europe_data = data[data['iso_code'].isin(europe)][['year', 'iso_code', 'country', 'co2']]
@@ -90,6 +91,7 @@ def update_europe_graph(selected_countries):
         title='CO₂ Emissions Over Time: By European Countries',
         labels={'co2': 'Total CO₂ Emissions (Metric Tons)', 'year': 'Year', 'country': 'Country'}
     )
+    fig.update_layout(xaxis=dict(range=[1850, 2022], fixedrange=True))
     return fig
 
 
