@@ -207,8 +207,9 @@ def init_callbacksalso(app):
         fig.update_layout(
             xaxis=dict(
                 title='Year',
-                tickvals=list(range(1870, 2020, 20)) + [2023] + [1855],  # 2023 included, 2020 removed, else 2020 was on top of 2023 lol
-                range=[1850, 2023], # actual range
+                tickvals=list(range(1870, 2020, 20)) + [2023] + [1855],  # 2023 included, 2020 removed, else 2020 was on top of 2023.
+                range=[1850, 2023],  # Actual range
+                fixedrange=True  # Prevent zooming out, Daniel found this 😎
             ),
             yaxis=dict(
                 title='Percentage (%)',
@@ -217,7 +218,7 @@ def init_callbacksalso(app):
             legend=dict(title='Gas Type', traceorder='reversed'),
             height=400,
             margin=dict(l=0, r=0, t=0, b=80),
-            annotations=[  # Add source annotation here
+            annotations=[
                 dict(
                     text="Source for dataset: https://ourworldindata.org/grapher/ghg-emissions-by-gas",
                     showarrow=False,

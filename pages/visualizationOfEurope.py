@@ -472,13 +472,20 @@ def init_callbacks(app):
 
         return fig
 
-    # Callback for the GHG aggregated trend graph in the second tab
     @app.callback(
         Output('ghg-aggregated-trend-graph', 'figure'),
         Input('ghg-aggregated-trend-graph', 'id')
     )
     def update_aggregated_ghg_graph(dummy_input):
         grouped_data = europe_result.groupby(['north_or_south', 'year'])['total_ghg'].sum().reset_index()
+
+        # Map 'north_or_south' to region names, for the hovertip.
+        grouped_data['region_label'] = grouped_data['north_or_south'].map({
+            'Northern': 'Northern Europe',
+            'Southern': 'Southern Europe'
+        })
+
+        # Create the figure
         fig2 = px.line(
             grouped_data,
             x='year',
@@ -486,30 +493,51 @@ def init_callbacks(app):
             color='north_or_south',
             title="Total GHG Emissions Per North/South: Northern vs Southern Europe",
             labels={'year': 'Year', 'total_ghg': 'Total GHG Emissions'},
-            color_discrete_map={'Northern': 'blue', 'Southern': 'red'}
+            color_discrete_map={'Northern': 'blue', 'Southern': 'red'},
+            custom_data=['region_label']  # Include the new region label.
         )
-        fig2.update_traces(mode='lines', line=dict(width=2))
-        fig2.update_layout(
-                xaxis_title='Year',
-                yaxis=dict(title='Total GHG Emissions', range=[0, 10e9]),
-                legend_title='Region',
-                annotations=[
-                    dict(
-                        text="Source for dataset: https://ourworldindata.org/greenhouse-gas-emissions",
-                        showarrow=False,
-                        xref="paper",
-                        yref="paper",
-                        x=0.5,
-                        y=-0.2,
-                        xanchor='center',
-                        yanchor='top',
-                        font=dict(size=12, color="gray")
-                    )
-                ]
-            )
-        fig2.update_xaxes(range=[1990, 2000], tickmode='linear')
 
-        # Add a shaded rectangle for 1995–1996, to make it stand out mroe
+        fig2.update_traces(
+            mode='lines',
+            line=dict(width=2),
+            hovertemplate=(
+                "<b>%{customdata[0]}</b><br>"
+                "Year: %{x}<br>"
+                "Total GHG Emissions: %{y}<br>"
+                "<extra></extra>"
+            )
+        )
+
+        # Update layout to lock axes and enhance interactivity
+        fig2.update_layout(
+            xaxis=dict(
+                title='Year',
+                range=[1990, 2000],
+                fixedrange=True,
+                tickmode='linear'
+            ),
+            yaxis=dict(
+                title='Total GHG Emissions',
+                range=[0, 10e9],
+                fixedrange=True
+            ),
+            legend_title='Region',
+            annotations=[
+                dict(
+                    text="Source for dataset: https://ourworldindata.org/greenhouse-gas-emissions",
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=-0.2,
+                    xanchor='center',
+                    yanchor='top',
+                    font=dict(size=12, color="gray")
+                )
+            ]
+        )
+
+        # Add a shaded rectangle for 1995–1996
         fig2.add_shape(
             type="rect",
             x0=1995,
@@ -588,6 +616,7 @@ def init_callbacks(app):
                 xaxis=dict(
                     title='Month',
                     tickmode='array',
+                    fixedrange=True,
                     tickvals=list(month_mapping.keys()),
                     ticktext=list(month_mapping.values())
                 ),
