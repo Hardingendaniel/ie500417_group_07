@@ -4,14 +4,12 @@ import plotly.express as px
 from data.data import data, load_markdown, load_ghg_release, load_gh_by_sector
 from .analytical_operations import AnalyticalOperations
 
-# Filter numeric columns for correlation calculation
-numeric_df = data.select_dtypes(include='number')
-columns_of_interest = ['total_ghg', 'co2', 'gdp', 'population', 'cumulative_co2',  'nitrous_oxide', 'methane']
-
 # First paragraph
 MARKDOWN_FILE_PATH = 'data/markdown/explanation_of_ghg.md'
 # Second paragraph
 MARKDOWN_FILE_PATH2 = 'data/markdown/where_ghg_comes_from.md'
+
+MARKDOWN_FILE_PATH3 = 'data/markdown/top5_barchart.md'
 
 # Define layout with Tabs
 layout = html.Div([
@@ -81,49 +79,35 @@ layout = html.Div([
             )
         ]),
 
-
         # Tab 2:Analysis with Data
         dcc.Tab(className='tabs-title', label='Analysis with Data', children=[
             html.Div(
                 className='centered-content',
                 children=[
+                    html.Div(
+                        [
+                            html.H1("Top 5 Worst in Different Emission Categories"),
+                            dcc.Markdown(
+                                id='markdown-content-tab2-p3',
+                                dangerously_allow_html=True
 
-                    html.H1("Top 5 Worst in Different Emission Categories"),
+                            )
+                        ],
+                        className='centered-content markdown-content'
+                    ),
+
                     dcc.Dropdown(
                         className='dropdown',
                         id='year-selector',
-                        options=[{'label': year, 'value': year} for year in range(1990, 2022)],
-                        value=1990,
+                        options=[{'label': year, 'value': year} for year in range(1990, 2021)],
+                        value=2019,
                         clearable=False,
                     ),
+
                     html.Div(id='charts-container'),
 
                     html.H1("Analytical Factors Leading to High Total Greenhouse Emission (World and Europe)"),
                     html.Div(id='analytical_factors'),
-
-                    html.H1("Filtered Correlation Matrix Heatmap"),
-                    html.Div(
-                        className='heatmap-checklist-container',
-                        children=[
-                            html.Div(
-                                className='heatmap-container',
-                                children=[
-                                    dcc.Graph(id='correlation-heatmap')
-                                ]
-                            ),
-                            html.Div(
-                                className='checklist-container',
-                                children=[
-                                    dcc.Checklist(
-                                        className='checklist',
-                                        id='attribute-checklist',
-                                        options=[{'label': col, 'value': col} for col in ['total_ghg', 'co2', 'gdp', 'population', 'cumulative_co2', 'nitrous_oxide', 'methane']],
-                                        value=['total_ghg', 'co2', 'gdp', 'population', 'cumulative_co2', 'nitrous_oxide', 'methane'],
-                                    )
-                                ]
-                            )
-                        ]
-                    )
                 ]
             )
         ]),
@@ -143,6 +127,12 @@ def init_callbacksalso(app):
         Input('interval-component', 'n_intervals'))
     def update_markdown2(n_intervals):
         return load_markdown(MARKDOWN_FILE_PATH2)
+
+    @app.callback(
+        Output('markdown-content-tab2-p3', 'children'),
+        Input('interval-component', 'n_intervals'))
+    def update_markdown2(n_intervals):
+        return load_markdown(MARKDOWN_FILE_PATH3)
 
     @app.callback(
         Output('ghg-stacked-chart', 'figure'),
@@ -342,31 +332,6 @@ def init_callbacksalso(app):
 
         return fig
 
-
-
-    # Callback to update the heatmap based on selected attributes
-    @app.callback(
-        Output('correlation-heatmap', 'figure'),
-        [Input('attribute-checklist', 'value')]
-    )
-    def update_heatmap(selected_columns):
-        # Filter the correlation matrix based on selected columns
-        if selected_columns:
-            correlation_matrix_filtered = numeric_df[selected_columns].corr()
-            fig = px.imshow(
-                correlation_matrix_filtered,
-                text_auto=True,
-                labels=dict(color='Correlation')
-            )
-            fig.update_layout(
-                width=600,
-                height=600,
-                margin=dict(l=20, r=20)
-            )
-            fig.update_xaxes(tickangle=45)
-            return fig
-        return {}  # Return an empty figure if no columns are selected
-
     # Callback to update the tables based on the selected year
     @app.callback(
         Output('charts-container', 'children'),
@@ -383,6 +348,7 @@ def init_callbacksalso(app):
             y='co2_per_capita',
             title='Top 5 Countries by CO2 per Capita'
         )
+        bar_chart_co2_per_capita.update_yaxes(range=[0, None], fixedrange=True)
 
         # Bar chart for highest co2 emission
         highest_co2_emission = filtered_data.nlargest(5, 'co2')[['country', 'co2']]
@@ -392,6 +358,7 @@ def init_callbacksalso(app):
             y='co2',
             title='Top 5 Countries by CO2 Emission'
         )
+        bar_chart_co2_emission.update_yaxes(range=[0, None], fixedrange=True)
 
         # Bar chart for highest total_ghg
         highest_total_ghg = filtered_data.nlargest(5, 'total_ghg')[['country', 'total_ghg', 'ghg_per_capita']]
@@ -401,6 +368,7 @@ def init_callbacksalso(app):
             y='total_ghg',
             title='Top 5 Countries by Total GHG'
         )
+        bar_chart_total_ghg.update_yaxes(range=[0, None], fixedrange=True)
 
         # Wrap all charts in a div
         charts_div = html.Div(
