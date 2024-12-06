@@ -7,10 +7,6 @@ providing a comprehensive view of past trends and future projections.
 
 ### Key Features:
 - **BLue Line:** Actual GHG emissions data for Europe from 1990 to 2020.
-- **Dashed lines (Validation forecasts)**
-    - **ARIMA Validation Forecast:** Represents the ARIMA model's predictions during the validation period.
-    - **Exponential Smoothing Validation Forecast:** Represents the Exponential Smoothing model's predictions during the validation period.
-    - **AdaBoost Validation Forecast:** Represents the AdaBoost model's predictions during the validation period.
 - **Dotted lines (Future forecasts)**
     - **ARIMA Future Forecast:** Shows the ARIMA model's forecasted GHG emissions for future years.
     - **Exponential Smoothing Future Forecast:** Shows the Exponential Smoothing model's forecasted GHG emissions for future years.

@@ -20,3 +20,5 @@ forecasts among the models evaluated.
 
 ### Notes:
 - Error values are displayed on the y-axis in MSE units, providing a quantitative measure of each model's forecasting accuracy.
+- The reason the MSE values are in such high values are because the GHG emissions data is on a large scale, 
+and the errors are squared, leading to larger values.

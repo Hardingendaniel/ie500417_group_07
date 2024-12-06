@@ -6,7 +6,6 @@ from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.linear_model import LinearRegression
-import numpy as np
 from data.data import load_total_ghg_data, load_markdown
 
 # Path to markdown files
@@ -109,23 +108,17 @@ def calculate_errors(test, forecasts):
     return errors
 
 # Function to plot forecasts for a single model
-def plot_single_forecast(actual, forecast_validation, forecast_future, model_name, title):
+def plot_single_forecast(actual, forecast_future, model_name, title):
     fig = go.Figure()
-    # Plot actual data
     fig.add_trace(go.Scatter(
         x=actual.index, y=actual.values,
         mode='lines', name='Actual Data',
         line=dict(color='blue')
     ))
-    # Plot forecast on validation set
+    # Connect the last point of actual data with the forecast
+    combined_forecast = pd.concat([actual.iloc[-1:], forecast_future])
     fig.add_trace(go.Scatter(
-        x=forecast_validation.index, y=forecast_validation.values,
-        mode='lines', name=f'{model_name} Validation Forecast',
-        line=dict(dash='dash')
-    ))
-    # Plot future forecast
-    fig.add_trace(go.Scatter(
-        x=forecast_future.index, y=forecast_future.values,
+        x=combined_forecast.index, y=combined_forecast.values,
         mode='lines', name=f'{model_name} Future Forecast',
         line=dict(dash='dot')
     ))
@@ -137,59 +130,60 @@ def plot_single_forecast(actual, forecast_validation, forecast_future, model_nam
     )
     return fig
 
-# Generate individual forecast figures
+# Make individual forecast figures
 
 # ARIMA
 arima_validation_forecast = forecasts['ARIMA']
 arima_future_forecast = forecasts_future['ARIMA']
 arima_fig = plot_single_forecast(
-    annual_data, arima_validation_forecast, arima_future_forecast, 'ARIMA', 'ARIMA Forecast')
+    annual_data, arima_future_forecast, 'ARIMA', 'ARIMA Forecast')
 
 # Exponential Smoothing
 exp_smoothing_validation_forecast = forecasts['Exponential Smoothing']
 exp_smoothing_future_forecast = forecasts_future['Exponential Smoothing']
 exp_smoothing_fig = plot_single_forecast(
-    annual_data, exp_smoothing_validation_forecast, exp_smoothing_future_forecast, 'Exponential Smoothing', 'Exponential Smoothing Forecast')
+    annual_data, exp_smoothing_future_forecast, 'Exponential Smoothing', 'Exponential Smoothing Forecast')
 
 # AdaBoost Regression
 adaboost_validation_forecast = forecasts['AdaBoost Regression']
 adaboost_future_forecast = forecasts_future['AdaBoost Regression']
 adaboost_fig = plot_single_forecast(
-    annual_data, adaboost_validation_forecast, adaboost_future_forecast, 'AdaBoost Regression', 'AdaBoost Regression Forecast')
+    annual_data, adaboost_future_forecast, 'AdaBoost Regression', 'AdaBoost Regression Forecast')
 
 # Generate comparison plot including future forecasts
-def plot_forecasts(actual, forecasts, forecasts_future, title):
+def plot_forecasts(actual, forecasts_future, title):
     fig = go.Figure()
-    # Plot actual data
+
+    # Actual data up to 2020 (inclusive)
+    actual_until_2020 = actual.loc[:'2020-12-31']
+
     fig.add_trace(go.Scatter(
-        x=actual.index, y=actual.values,
+        x=actual_until_2020.index, y=actual_until_2020.values,
         mode='lines', name='Actual Data',
         line=dict(color='blue')
     ))
-    # Plot forecasts on validation set
-    for model_name, forecast in forecasts.items():
-        fig.add_trace(go.Scatter(
-            x=forecast.index, y=forecast.values,
-            mode='lines', name=f'{model_name} Validation Forecast',
-            line=dict(dash='dash')
-        ))
-    # Plot future forecasts
+
+    # Plot future forecasts, connecting from the last actual data point in 2020
     for model_name, forecast in forecasts_future.items():
+        combined_forecast = pd.concat([actual_until_2020.iloc[-1:], forecast])
         fig.add_trace(go.Scatter(
-            x=forecast.index, y=forecast.values,
+            x=combined_forecast.index, y=combined_forecast.values,
             mode='lines', name=f'{model_name} Future Forecast',
             line=dict(dash='dot')
         ))
+
     fig.update_layout(
         title=title,
         xaxis_title='Year',
         yaxis_title='Emissions',
         hovermode='x unified'
     )
+
     return fig
 
+
 # Generate the comparison plot
-forecast_fig = plot_forecasts(annual_data, forecasts, forecasts_future, 'Forecast Comparison Including Future Years')
+forecast_fig = plot_forecasts(annual_data, forecasts_future, 'Forecast Comparison Including Future Years')
 
 # Calculate errors on validation set
 errors = calculate_errors(test_data, forecasts)
