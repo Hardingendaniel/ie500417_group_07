@@ -361,15 +361,15 @@ def init_callbacksalso(app):
         )
         bar_chart_co2_emission.update_yaxes(range=[0, None], fixedrange=True)
 
-        # Bar chart for highest total_ghg
-        highest_total_ghg = filtered_data.nlargest(5, 'total_ghg')[['country', 'total_ghg', 'ghg_per_capita']]
-        bar_chart_total_ghg = px.bar(
-            highest_total_ghg,
+        # Bar chart for highest co2_per_gdp
+        highest_co2_per_gdp = filtered_data.nlargest(5, 'co2_per_gdp')[['country', 'co2_per_gdp']]
+        bar_chart_co2_per_gdp = px.bar(
+            highest_co2_per_gdp,
             x='country',
-            y='total_ghg',
-            title='Top 5 Countries by Total GHG'
+            y='co2_per_gdp',
+            title='Top 5 Countries by Total Co2 per gdp'
         )
-        bar_chart_total_ghg.update_yaxes(range=[0, None], fixedrange=True)
+        bar_chart_co2_per_gdp.update_yaxes(range=[0, None], fixedrange=True)
 
         # Wrap all charts in a div
         charts_div = html.Div(
@@ -377,7 +377,7 @@ def init_callbacksalso(app):
             children=[
                 dcc.Graph(figure=bar_chart_co2_per_capita, style={'height': '450px', 'width': '450px'}),
                 dcc.Graph(figure=bar_chart_co2_emission, style={'height': '450px', 'width': '450px'}),
-                dcc.Graph(figure=bar_chart_total_ghg, style={'height': '450px', 'width': '450px'}),
+                dcc.Graph(figure=bar_chart_co2_per_gdp, style={'height': '450px', 'width': '450px'}),
             ]
         )
 
