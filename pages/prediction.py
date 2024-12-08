@@ -7,6 +7,12 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.linear_model import LinearRegression
 from data.data import load_total_ghg_data, load_markdown
+from sklearn.tree import DecisionTreeRegressor
+import warnings
+from statsmodels.tools.sm_exceptions import ConvergenceWarning
+
+# Ignore convergence warnings. As it is an out of date error.
+warnings.simplefilter('ignore', ConvergenceWarning)
 
 # Path to markdown files
 ARIMA_MODEL_EXPLANATION = 'data/markdown/arima_model_explanation.md'
@@ -52,7 +58,7 @@ class ForecastModels:
     def __init__(self, train_data):
         self.train_data = train_data
 
-    def arima(self, order=(2, 1, 2), test_index=None):
+    def arima(self, order=(3, 2, 3), test_index=None):
         model = ARIMA(self.train_data, order=order, enforce_stationarity=False, enforce_invertibility=False)
         fit = model.fit(method_kwargs={'maxiter': 200})
         forecast = fit.forecast(steps=len(test_index))
@@ -71,7 +77,7 @@ class ForecastModels:
         y_train = train_df['Emissions'].values
 
         ada_regressor = AdaBoostRegressor(
-            estimator=LinearRegression(),
+            estimator=DecisionTreeRegressor(max_depth=3),
             n_estimators=n_estimators,
             learning_rate=learning_rate,
             random_state=random_state

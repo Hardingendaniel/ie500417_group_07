@@ -7,10 +7,9 @@ providing a comprehensive view of past trends and future projections.
 
 ### Key Features:
 - **BLue Line:** Actual GHG emissions data for Europe from 1990 to 2020.
-- **Dotted lines (Future forecasts)**
-    - **ARIMA Future Forecast:** Shows the ARIMA model's forecasted GHG emissions for future years.
-    - **Exponential Smoothing Future Forecast:** Shows the Exponential Smoothing model's forecasted GHG emissions for future years.
-    - **AdaBoost Future Forecast:** Shows the AdaBoost model's forecasted GHG emissions for future years.
+  - **ARIMA Future Forecast:** Shows the ARIMA model's forecasted GHG emissions for future years.
+  - **Exponential Smoothing Future Forecast:** Shows the Exponential Smoothing model's forecasted GHG emissions for future years.
+  - **AdaBoost Future Forecast:** Shows the AdaBoost model's forecasted GHG emissions for future years.
 
 
 ### Insights:
@@ -19,7 +18,5 @@ providing a comprehensive view of past trends and future projections.
 - **Comparative Analysis:** By displaying all models together, we can compare their forecasts, assessing which models align more closely with historical trends and each other.
 - 
 ### Notes:
-- **Validation Period:** The dashed lines during the validation period allow us to assess each model's accuracy by comparing predictions 
-against actual data.
 - **Future Uncertainty:** While future forecasts provide valuable insights, they are subject to uncertainties, especially considering potential 
 policy changes, technological advancements, or unforeseen events affecting emissions.

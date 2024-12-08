@@ -1,7 +1,6 @@
 # Exponential Smoothing
 
-**Exponential Smoothing** 
-Exponential Smoothing is a versatile forecasting method that applies exponentially decreasing weights to past observations. 
+**Exponential Smoothing**  is a versatile forecasting method that applies exponentially decreasing weights to past observations. 
 This technique is effective for data exhibiting trends but lacking strong seasonal patterns.
 
 ## **Why Exponential Smoothing?**

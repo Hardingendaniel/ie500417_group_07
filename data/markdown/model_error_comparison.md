@@ -5,18 +5,20 @@ emissions in Europe. MSE quantifies the average squared difference between the p
 lower values indicating better model performance.
 
 ### Models Evaluated:
-- Exponential Smoothing:
-  - Lowest MSE, indicating it captures the data trends most effectively and provides the most accurate 
-forecasts among the models evaluated.
 - ARIMA:
-  - Performs well with a slightly higher MSE than Exponential Smoothing, suggesting strong predictive accuracy but slightly less optimal for this dataset.
+  - Lowest MSE, indicating it captures the data trends most effectively and provides the most accurate forecasts among the models evaluated.
+- Exponential Smoothing:
+  - Slightly higher MSE than ARIMA, suggesting it has strong predictive accuracy but is marginally less optimal for this dataset.
 - AdaBoost Regression:
-  - Exhibits the highest MSE among the three models, suggesting it may struggle to fit the trends in the data as effectively as the other methods.
-  - 
+  - Highest MSE among the three models, indicating it struggles to fit the trends in the data as effectively as ARIMA and Exponential Smoothing.
+
 ### Insights:
-- **Exponential Smoothing** is the most accurate model for this dataset, effectively modeling the underlying trends in greenhouse gas emission
-- **ARIMA** also demonstrates good predictive capability, but its higher MSE compared to Exponential Smoothing indicates it may not capture all nuances in the data.
-- **AdaBoost Regression** shows higher error levels, highlighting limitations in its applicability for this specific time series data.
+- **ARIMA** Is the most accurate model of the three. Arima is powerful for time series forecasting, and it performs well in this context.
+- **Exponential Smoothing** Performs well, with the second lowest MSE value. With slightly higher MSE values than the ARIMA.
+It effectively captures data trends and provides reliable forecasts.
+- **AdaBoost Regression** shows higher error levels, This model needed some tuning which made it better, 
+but it still has the highest MSE value among the three models. indicating that it may not be the best choice 
+for this specific forecasting task without further optimization.
 
 ### Notes:
 - Error values are displayed on the y-axis in MSE units, providing a quantitative measure of each model's forecasting accuracy.
