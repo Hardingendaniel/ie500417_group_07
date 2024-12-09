@@ -700,7 +700,7 @@ def init_callbacks(app):
             color_discrete_map=epc_colors,  # Apply the green to red mapping (to match EPC rating IRL)
             category_orders={'EPC': epc_order},  # Order the EPC alphabetically
             labels={'Age of Property': 'Age of Property', 'avg_energy_consumption': 'Energy Consumption (kWh)'},
-            title="Energy Consumption Distribution by Property Age and EPC Ratings (Outliers Removed)"
+            title="Energy Consumption Distribution by Property Age and EPC Ratings (Focusing on EPC ratings, ignoring types of buildings)"
         )
 
         # Customize hovertemplate for better interactivity

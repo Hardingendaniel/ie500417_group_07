@@ -10,6 +10,8 @@ A secondary bonus of this is less money for the consumer to pay for heating thei
 
 *Note*: Newer buildings in the UK tends to use more electricity than older buildings, as the older buildings rely on larger living spaces, with modern heating by electricity rather than natural gas. While also, older buildings often used thick stone as building material, which provides better insulation which holds in heat better in winter. <sup>[3]</sup>
 
+*Note 2*: The bar graph focuses on the differences between the EPC ratings, there is a high variance because we're not taking into account the different types of buildings, such as apartment vs house.
+
 
 [1]: https://energy.ec.europa.eu/topics/energy-efficiency/energy-efficient-buildings/energy-performance-buildings-directive_en
 [2]: https://www.ons.gov.uk/peoplepopulationandcommunity/housing/articles/ageofthepropertyisthebiggestsinglefactorinenergyefficiencyofhomes/2021-11-01
